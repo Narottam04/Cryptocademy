@@ -12,6 +12,7 @@ import FloatingInput from "../Components/Buttons/FloatingInput";
 import FloatingPasswordInput from "../Components/Buttons/FloatingPasswordInput";
 import ErrorToast from "../Components/ErrorToast";
 import FormAppInfo from "../Components/FormAppInfo";
+import GoogleLoginBtn from "../Components/Buttons/GoogleLoginBtn";
 // import GoogleLoginBtn from "../Components/Buttons/GoogleLoginBtn";
 
 const initialValues = {
@@ -51,11 +52,11 @@ function Signup() {
     try {
       const response = await signUp(email, password);
       await updateProfileName(username);
-
+      let userNetworth, availableCoins;
       const { isNewUser } = getAdditionalUserInfo(response);
       if (isNewUser) {
         // add user data with networth on database
-        const { error } = await supabase.from("users").insert([
+        const { data: networth, error } = await supabase.from("users").insert([
           {
             userId: response.user.uid,
             username,
@@ -70,21 +71,30 @@ function Signup() {
         // }
 
         // give 100k coins to user
-        const { error: addToPortfolioError } = await supabase.from("portfolio").insert([
-          {
-            userId: response.user.uid,
-            coinId: "USD",
-            coinName: "Virtual USD",
-            image: "https://img.icons8.com/fluency/96/000000/us-dollar-circled.png",
-            amount: 100000,
-            coinSymbol: "vusd"
-          }
-        ]);
+        const { data: userCoin, error: addToPortfolioError } = await supabase
+          .from("portfolio")
+          .insert([
+            {
+              userId: response.user.uid,
+              coinId: "USD",
+              coinName: "Virtual USD",
+              image: "https://img.icons8.com/fluency/96/000000/us-dollar-circled.png",
+              amount: 100000,
+              coinSymbol: "vusd"
+            }
+          ]);
+        userNetworth = networth;
+        availableCoins = userCoin;
       }
 
       if (response.user) {
         console.log("created user successfully");
-        navigate("/");
+        navigate("/app", {
+          state: {
+            userNetworth,
+            availableCoins
+          }
+        });
       }
     } catch (error) {
       setErrorMessage(error.message);
@@ -173,17 +183,17 @@ function Signup() {
           </Link>
           {/* Social Provider signup */}
           {/* Turned off due to native android platform error for google sign in */}
-          {/* <div className="relative my-4">
-                        <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-black text-gray-100"> Or continue with </span>
-                        </div>
-                    </div>
-                    <div className="mt-8  space-y-4">
-                        <GoogleLoginBtn/>
-                    </div> */}
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-black text-gray-100"> Or continue with </span>
+            </div>
+          </div>
+          <div className="mt-8  space-y-4">
+            <GoogleLoginBtn />
+          </div>
         </div>
         <FormAppInfo />
       </section>

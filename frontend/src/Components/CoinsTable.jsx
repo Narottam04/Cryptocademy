@@ -17,13 +17,13 @@ const CoinsTable = () => {
 
   const { data, error, isLoading, isSuccess } = useGetCoinsDataQuery(
     { currency, page },
-    { pollingInterval: 2000 }
+    { pollingInterval: 10000 }
   );
 
   const {
     data: globalCryptoData,
     // error: fetchGlobalCryptoError,
-    // isLoading: fetchGlobalCryptoLoading,
+    isLoading: fetchGlobalCryptoLoading,
     isSuccess: fetchGlobalCryptoSuccess
   } = useGetGlobalCryptoDataQuery();
 
@@ -59,7 +59,7 @@ const CoinsTable = () => {
 
   return (
     <div className="z-10">
-      {isLoading && <Loader />}
+      {(isLoading || fetchGlobalCryptoLoading) && <Loader />}
       {error && <ErrorToast message="Something Went Wrong!" ref={toastRef} />}
       {fetchGlobalCryptoSuccess && (
         <div className="no-scrollbar flex  p-4 space-x-4 rounded-box w-screen overflow-scroll max-w-md md:max-w-full lg:flex-wrap">

@@ -66,7 +66,7 @@ const MoreMobileNavPage = () => {
         <Link to="/app/learn" className="px-4  flex justify-between items-center">
           <div className="flex justify-center space-x-2 items-center cursor-pointer">
             <HiAcademicCap className="inline-block text-gray-200 w-6 h-6 " />
-            <h2 className="text-xl font-semibold text-gray-200">Learn & Earn</h2>
+            <h2 className="text-xl font-semibold text-gray-200">Free Trading Courses</h2>
           </div>
           <AiOutlineRight className="inline-block text-gray-200 w-5 h-5 mb-1" />
         </Link>

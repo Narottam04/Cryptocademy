@@ -31,13 +31,8 @@ const PieChart = ({ globalCryptoData }) => {
     ]
   };
 
-  console.log(
-    Object.values(globalCryptoData.data.market_cap_percentage),
-    Object.keys(globalCryptoData.data.market_cap_percentage)
-  );
-
   return (
-    <div className="flex justify-center mt-8  h-3/4 pb-10">
+    <div className="flex justify-center mt-8 h-1/3 lg:h-3/4 pb-10 overflow-y-hidden">
       <Pie data={data} />
     </div>
   );

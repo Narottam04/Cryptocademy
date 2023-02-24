@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { useAuth } from "../Context/AuthContext";
 import { useGetTrendingCoinDataQuery } from "../services/coinsDataApi";
@@ -13,9 +13,8 @@ import {
 
 import Loader from "./Loader";
 
-const DesktopDashboard = () => {
+const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
   const { currentUser } = useAuth();
-
   // fetch trending coin data
   const {
     data: trendingCoins,
@@ -37,7 +36,9 @@ const DesktopDashboard = () => {
   // Get user networth
   const {
     data: userNetworth,
-    isSuccess: userNetworthSuccess
+    isSuccess: userNetworthSuccess,
+    isLoading: userNetworthLoading,
+    refetch: refetchUserNetworth
     // error: networthError
   } = useGetUserNetworthQuery(currentUser.uid);
 
@@ -67,10 +68,12 @@ const DesktopDashboard = () => {
   } = useGetLeaderboardQuery();
 
   const demoImage = "https://source.unsplash.com/fsSGgTBoX9Y";
+  const location = useLocation();
 
   useEffect(() => {
     refetchAvailableCoins();
-  }, []);
+    refetchUserNetworth();
+  }, [location?.state]);
 
   return (
     <>
@@ -79,7 +82,8 @@ const DesktopDashboard = () => {
         fetchWatchlistLoading ||
         fetchNewsLoading ||
         fetchAvailableUsdCoinsLoading ||
-        leaderboardIsLoading) && <Loader />}
+        leaderboardIsLoading ||
+        userNetworthLoading) && <Loader />}
       {/* credit card */}
       <div className="w-80 m-auto md:m-0 md:w-96 h-56 lg:ml-8 bg-gradient-to-tr from-gray-900 to-gray-700  rounded-xl relative text-white shadow-2xl transition-transform transform hover:scale-110">
         <div className="w-full px-8 absolute top-8 font-text">

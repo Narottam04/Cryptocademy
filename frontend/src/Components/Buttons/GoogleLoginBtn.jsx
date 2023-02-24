@@ -1,6 +1,13 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { getAdditionalUserInfo } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  getAdditionalUserInfo,
+  getAuth,
+  signInWithCredential
+} from "firebase/auth";
+import { Capacitor } from "@capacitor/core";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 
 import google from "../../Assets/svg/google.svg";
 import { useAuth } from "../../Context/AuthContext";
@@ -17,39 +24,91 @@ const GoogleLoginBtn = () => {
 
   async function googleSignInHandler() {
     try {
-      const response = await signInWithGoogle();
-      const { isNewUser } = getAdditionalUserInfo(response);
-      if (isNewUser) {
-        // add user data with networth on database
-        const { data, error } = await supabase.from("users").upsert([
-          {
-            userId: response.user.uid,
-            username: response.user.displayName,
-            email: response.user.email
-          }
-        ]);
+      let userNetworth, availableCoins;
+      if (!Capacitor.isNativePlatform()) {
+        const response = await signInWithGoogle();
+        const { isNewUser } = getAdditionalUserInfo(response);
+        if (isNewUser) {
+          // add user data with networth on database
+          const { data: networth, error } = await supabase.from("users").upsert([
+            {
+              userId: response.user.uid,
+              username: response.user.displayName,
+              email: response.user.email
+            }
+          ]);
 
-        // if(error){
-        //     console.log(error)
-        //     await deleteUser(response.user)
-        //     alert("Something Went Wrong! Please Try Again.")
-        // }
+          // if(error){
+          //     console.log(error)
+          //     await deleteUser(response.user)
+          //     alert("Something Went Wrong! Please Try Again.")
+          // }
 
-        // give 100k coins to user
-        console.log(data);
-        const { error: addToPortfolioError } = await supabase.from("portfolio").upsert([
-          {
-            userId: response.user.uid,
-            coinId: "USD",
-            coinName: "Virtual USD",
-            image: "https://img.icons8.com/fluency/96/000000/us-dollar-circled.png",
-            amount: 100000
-          }
-        ]);
+          // give 100k coins to user
+          console.log(networth);
+          const { data: userCoin, error: addToPortfolioError } = await supabase
+            .from("portfolio")
+            .upsert([
+              {
+                userId: response.user.uid,
+                coinId: "USD",
+                coinName: "Virtual USD",
+                image: "https://img.icons8.com/fluency/96/000000/us-dollar-circled.png",
+                amount: 100000
+              }
+            ]);
+          userNetworth = networth;
+          availableCoins = userCoin;
+        }
+      } else {
+        // 1. Create credentials on the native layer
+        const result = await FirebaseAuthentication.signInWithGoogle();
+        // 2. Sign in on the web layer using the id token
+        const credential = GoogleAuthProvider.credential(result.credential?.idToken);
+        const auth = getAuth();
+        await signInWithCredential(auth, credential);
+
+        if (result?.additionalUserInfo.isNewUser) {
+          // add user data with networth on database
+          const { data: networth, error } = await supabase.from("users").upsert([
+            {
+              userId: result.user?.uid,
+              username: result.user?.displayName,
+              email: result.user?.email
+            }
+          ]);
+
+          // if(error){
+          //     console.log(error)
+          //     await deleteUser(response.user)
+          //     alert("Something Went Wrong! Please Try Again.")
+          // }
+
+          // give 100k coins to user
+          console.log(networth);
+          const { data: userCoin, error: addToPortfolioError } = await supabase
+            .from("portfolio")
+            .upsert([
+              {
+                userId: result.user?.uid,
+                coinId: "USD",
+                coinName: "Virtual USD",
+                image: "https://img.icons8.com/fluency/96/000000/us-dollar-circled.png",
+                amount: 100000
+              }
+            ]);
+          userNetworth = networth;
+          availableCoins = userCoin;
+        }
       }
 
       console.log("logged in user successfully");
-      navigate("/app");
+      navigate("/app", {
+        state: {
+          userNetworth,
+          availableCoins
+        }
+      });
     } catch (error) {
       setErrorMessage(error.message);
       toastRef.current.show();
