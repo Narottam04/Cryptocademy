@@ -18,10 +18,13 @@ const GoogleLoginBtn = () => {
   async function googleSignInHandler() {
     try {
       const response = await signInWithGoogle();
+      console.log(response);
       const { isNewUser } = getAdditionalUserInfo(response);
+      let userNetworth, availableCoins;
+
       if (isNewUser) {
         // add user data with networth on database
-        const { data, error } = await supabase.from("users").upsert([
+        const { data: networth, error } = await supabase.from("users").upsert([
           {
             userId: response.user.uid,
             username: response.user.displayName,
@@ -36,20 +39,30 @@ const GoogleLoginBtn = () => {
         // }
 
         // give 100k coins to user
-        console.log(data);
-        const { error: addToPortfolioError } = await supabase.from("portfolio").upsert([
-          {
-            userId: response.user.uid,
-            coinId: "USD",
-            coinName: "Virtual USD",
-            image: "https://img.icons8.com/fluency/96/000000/us-dollar-circled.png",
-            amount: 100000
-          }
-        ]);
+        console.log(networth);
+        const { data: userCoin, error: addToPortfolioError } = await supabase
+          .from("portfolio")
+          .upsert([
+            {
+              userId: response.user.uid,
+              coinId: "USD",
+              coinName: "Virtual USD",
+              image: "https://img.icons8.com/fluency/96/000000/us-dollar-circled.png",
+              amount: 100000
+            }
+          ]);
+
+        userNetworth = networth;
+        availableCoins = userCoin;
       }
 
       console.log("logged in user successfully");
-      navigate("/app");
+      navigate("/app", {
+        state: {
+          userNetworth,
+          availableCoins
+        }
+      });
     } catch (error) {
       setErrorMessage(error.message);
       toastRef.current.show();
