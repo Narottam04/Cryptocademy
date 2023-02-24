@@ -137,7 +137,7 @@ const UserProfile = () => {
                 <div className="">
                   <h1 className="font-light text-xs">Networth</h1>
                   <p className="font-medium tracking-wider text-sm">
-                    {userNetworthSuccess && <span>${userNetworth}</span>}
+                    {userNetworthSuccess && <span>${userNetworth[0]?.networth}</span>}
                   </p>
                 </div>
                 {/* <div className="">
