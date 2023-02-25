@@ -112,42 +112,16 @@ export const supabaseApi = createApi({
     getUserNetworth: builder.query({
       queryFn: async (id) => {
         try {
-          let { data: portfolio, error } = await supabase
-            .from("portfolio")
-            .select(
-              `
-                coinId,
-                coinName,
-                image,
-                amount
-              `
-            )
+          const { data: getNetworth, error } = await supabase
+            .from("users")
+            .select("networth")
             .eq("userId", `${id}`);
+
           if (error) {
             throw new Error(error);
           }
 
-          if (portfolio !== []) {
-            const userNetworth = portfolio.reduce(
-              (previousValue, currentCoin) => previousValue + currentCoin.amount,
-              0
-            );
-
-            const { data, error } = await supabase
-              .from("users")
-              .update({ networth: userNetworth })
-              .eq("userId", `${id}`);
-
-            if (error) {
-              throw new Error(error);
-            }
-
-            if (data) {
-              return { data: userNetworth };
-            }
-          } else {
-            throw new Error("Something went wrong!");
-          }
+          return { data: getNetworth };
         } catch (error) {
           return { error: error };
         }

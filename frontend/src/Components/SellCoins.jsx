@@ -113,6 +113,20 @@ const SellCoins = ({ data, modal, setModal }) => {
       }
 
       // calculate networth
+      let { data: portfolioData } = await supabase
+        .from("portfolio")
+        .select("*")
+        .eq("userId", `${currentUser.uid}`);
+
+      const userNetworth = portfolioData.reduce(
+        (previousValue, currentCoin) => previousValue + currentCoin.amount,
+        0
+      );
+
+      const { data: updateNetworth, error: updateErr } = await supabase
+        .from("users")
+        .update({ networth: parseFloat(userNetworth) })
+        .eq("userId", `${currentUser.uid}`);
 
       setOrderLoading(false);
       setModal(false);

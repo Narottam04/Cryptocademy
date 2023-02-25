@@ -109,7 +109,7 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
               <div className="">
                 <h4 className="font-light text-xs">Networth</h4>
                 <p className="font-semibold tracking-wider text-sm">
-                  {userNetworthSuccess && <span>${userNetworth}</span>}
+                  {userNetworthSuccess && <span>${userNetworth[0]?.networth}</span>}
                 </p>
               </div>
               {/* <div className="">

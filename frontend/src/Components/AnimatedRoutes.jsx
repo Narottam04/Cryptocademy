@@ -30,6 +30,7 @@ const Login = lazy(() => import("../Pages/Login"));
 const Signup = lazy(() => import("../Pages/Signup"));
 const ResetPassword = lazy(() => import("../Pages/ResetPassword"));
 const ForgotPassword = lazy(() => import("../Pages/ForgotPassword"));
+const EmailVerification = lazy(() => import("../Pages/EmailVerification"));
 
 // const CoinMarket = lazy(() => import("../Pages/CoinMarket"));
 // const News = lazy(() => import("../Pages/News"));
@@ -83,131 +84,21 @@ const AnimatedRoutes = () => {
           <Route path="/app/faq" element={<FAQ />} />
           <Route path="/app/market/globalStats" element={<GlobalStats />} />
         </Route>
-        {/* <Route
-          path="/app"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/market"
-          element={
-            <ProtectedRoute>
-              <CoinMarket />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/search"
-          element={
-            <ProtectedRoute>
-              <Search />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/leaderboard"
-          element={
-            <ProtectedRoute>
-              <Leaderboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/ai"
-          element={
-            <ProtectedRoute>
-              <AiPredections />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/coin/USD"
-          element={
-            <ProtectedRoute>
-              <VirtualUsdPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/coin/:id"
-          element={
-            <ProtectedRoute>
-              <CurrencyDetailsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/news"
-          element={
-            <ProtectedRoute>
-              <News />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/watchlist"
-          element={
-            <ProtectedRoute>
-              <Watchlist />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/portfolio"
-          element={
-            <ProtectedRoute>
-              <Portfolio />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/learn"
-          element={
-            <ProtectedRoute>
-              <Learn />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/profile"
-          element={
-            <ProtectedRoute>
-              <UserProfile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/more"
-          element={
-            <ProtectedRoute>
-              <MoreMobileNavPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/faq"
-          element={
-            <ProtectedRoute>
-              <FAQ />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app/market/globalStats"
-          element={
-            <ProtectedRoute>
-              <GlobalStats />
-            </ProtectedRoute>
-          }
-        /> */}
+
         <Route
           path="/signup"
           element={
             <Suspense fallback={<Loader />}>
               <Signup />
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="/signup/emailverify"
+          element={
+            <Suspense fallback={<Loader />}>
+              <EmailVerification />
             </Suspense>
           }
         />

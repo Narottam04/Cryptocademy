@@ -60,6 +60,7 @@ const BuyCoins = ({ data, modal, setModal }) => {
         .eq("coinId", `${data.id}`);
 
       if (existingCoin.length !== 0) {
+        console.log("running this");
         let { data: updateExistingCoin, error: updateExistingCoinErr } = await supabase
           .from("portfolio")
           .update({
@@ -69,58 +70,103 @@ const BuyCoins = ({ data, modal, setModal }) => {
           .eq("userId", `${currentUser.uid}`)
           .eq("coinId", `${data.id}`);
 
+        // deduct the value from virtual usd
+        let updatedUsdValue = availableUsdCoin[0].amount - coinUsdPrice;
+
+        let { data: updateUsdCoin, error: updateUsdCoinError } = await supabase
+          .from("portfolio")
+          .update({ amount: parseFloat(updatedUsdValue) })
+          .eq("userId", `${currentUser.uid}`)
+          .eq("coinId", "USD");
+
+        // calculate networth
+        let { data: portfolioData } = await supabase
+          .from("portfolio")
+          .select("*")
+          .eq("userId", `${currentUser.uid}`);
+
+        const userNetworth = portfolioData.reduce(
+          (previousValue, currentCoin) => previousValue + currentCoin.amount,
+          0
+        );
+
+        const { data: updateNetworth, error: updateErr } = await supabase
+          .from("users")
+          .update({ networth: parseFloat(userNetworth) })
+          .eq("userId", `${currentUser.uid}`);
+
+        console.log(updateNetworth, userNetworth, portfolioData, updateUsdCoin);
+
         if (updateExistingCoin) {
           setOrderLoading(false);
+          setModal(false);
           alert("Coin purchased successfully");
+          navigate("/app/portfolio");
           return;
         }
         if (updateExistingCoinErr) {
           throw new Error("Something went wrong, Please try again!");
         }
-      }
+      } else {
+        console.log("running that");
+        // if not already present add the purchased coin to database
+        const {
+          // data: addToPortfolio,
+          error: addToPortfolioError
+        } = await supabase.from("portfolio").insert([
+          {
+            userId: `${currentUser.uid}`,
+            coinId: `${data.id}`,
+            coinSymbol: `${data.symbol}`,
+            coinName: `${data.name}`,
+            image: `${data.image.large}`,
+            amount: `${coinUsdPrice}`,
+            coinAmount: `${coinValue}`
+          }
+        ]);
 
-      // if not already present add the purchased coin to database
-      const {
-        // data: addToPortfolio,
-        error: addToPortfolioError
-      } = await supabase.from("portfolio").insert([
-        {
-          userId: `${currentUser.uid}`,
-          coinId: `${data.id}`,
-          coinSymbol: `${data.symbol}`,
-          coinName: `${data.name}`,
-          image: `${data.image.large}`,
-          amount: `${coinUsdPrice}`,
-          coinAmount: `${coinValue}`
+        if (addToPortfolioError) {
+          throw new Error("Something went wrong, Please try again!");
         }
-      ]);
 
-      if (addToPortfolioError) {
-        throw new Error("Something went wrong, Please try again!");
+        // deduct the value from virtual usd
+        let updatedUsdValue = availableUsdCoin[0].amount - coinUsdPrice;
+
+        let {
+          // data: updateUsdCoin,
+          error: updateUsdCoinError
+        } = await supabase
+          .from("portfolio")
+          .update({ amount: updatedUsdValue })
+          .eq("userId", `${currentUser.uid}`)
+          .eq("coinId", "USD");
+
+        if (updateUsdCoinError) {
+          throw new Error("Something went wrong!");
+        }
+
+        // calculate networth
+        let { data: portfolioData } = await supabase
+          .from("portfolio")
+          .select("*")
+          .eq("userId", `${currentUser.uid}`);
+
+        const userNetworth = portfolioData.reduce(
+          (previousValue, currentCoin) => previousValue + currentCoin.amount,
+          0
+        );
+
+        const { data: updateNetworth, error: updateErr } = await supabase
+          .from("users")
+          .update({ networth: parseFloat(userNetworth) })
+          .eq("userId", `${currentUser.uid}`);
+
+        console.log(updateNetworth, userNetworth);
+        setOrderLoading(false);
+        setModal(false);
+        alert("Coin purchased successfully");
+        navigate("/app/portfolio");
       }
-
-      // deduct the value from virtual usd
-      let updatedUsdValue = availableUsdCoin[0].amount - coinUsdPrice;
-
-      let {
-        // data: updateUsdCoin,
-        error: updateUsdCoinError
-      } = await supabase
-        .from("portfolio")
-        .update({ amount: updatedUsdValue })
-        .eq("userId", `${currentUser.uid}`)
-        .eq("coinId", "USD");
-
-      if (updateUsdCoinError) {
-        throw new Error("Something went wrong!");
-      }
-
-      // // calculate networth
-
-      setOrderLoading(false);
-      setModal(false);
-      alert("Coin purchased successfully");
-      navigate("/app/portfolio");
     } catch (error) {
       setOrderLoading(false);
       alert(error);

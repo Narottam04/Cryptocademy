@@ -40,8 +40,8 @@ const Portfolio = () => {
     data: availableUsdCoins,
     isSuccess: fetchAvailableUsdCoinsSuccess,
     // error: fetchAvailableUsdCoinsError,
-    isLoading: fetchAvailableUsdCoinsLoading
-    // refetch: refetchAvailableCoins
+    isLoading: fetchAvailableUsdCoinsLoading,
+    refetch: refetchAvailableCoins
   } = useFetchAvailableCoinsQuery(currentUser.uid);
 
   // get coin percentage change
@@ -70,6 +70,7 @@ const Portfolio = () => {
     refetchPortfolioData();
     refetchNetworth();
     refetchPortfolioCoinData();
+    refetchAvailableCoins();
   }, []);
 
   return (
@@ -114,7 +115,7 @@ const Portfolio = () => {
                   Networth
                 </dt>
                 <dd className="mt-1 font-text text-xl leading-9 font-semibold text-gray-200">
-                  ${userNetworthSuccess && userNetworth}
+                  ${userNetworthSuccess && userNetworth[0]?.networth}
                 </dd>
               </dl>
             </div>
