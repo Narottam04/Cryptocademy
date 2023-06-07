@@ -60,7 +60,6 @@ const BuyCoins = ({ data, modal, setModal }) => {
         .eq("coinId", `${data.id}`);
 
       if (existingCoin.length !== 0) {
-        console.log("running this");
         let { data: updateExistingCoin, error: updateExistingCoinErr } = await supabase
           .from("portfolio")
           .update({
