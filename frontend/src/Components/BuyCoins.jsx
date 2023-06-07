@@ -13,7 +13,7 @@ import { fetchAvailableCoins } from "../Features/availableCoins";
 const BuyCoins = ({ data, modal, setModal }) => {
   const { currentUser } = useAuth();
   const [coinValue, setCoinValue] = useState(1);
-  const [coinUsdPrice, setCoinUsdPrice] = useState(data.market_data.current_price.usd);
+  const [coinUsdPrice, setCoinUsdPrice] = useState(data.market_data.current_price?.usd);
   const [orderLoading, setOrderLoading] = useState(false);
 
   const availableUsdCoins = useSelector((state) => state.availableCoins);
@@ -22,17 +22,17 @@ const BuyCoins = ({ data, modal, setModal }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(fetchAvailableCoins(currentUser.uid));
+    dispatch(fetchAvailableCoins(currentUser?.uid));
   }, [currentUser.uid, dispatch]);
 
   const changeCoinValue = (e) => {
     setCoinValue(e.target.value);
-    setCoinUsdPrice(data.market_data.current_price.usd * e.target.value);
+    setCoinUsdPrice(data?.market_data?.current_price?.usd * e.target.value);
   };
 
   const changeUsdValue = (e) => {
     setCoinUsdPrice(e.target.value);
-    setCoinValue(e.target.value / data.market_data.current_price.usd);
+    setCoinValue(e.target.value / data?.market_data?.current_price?.usd);
   };
 
   async function onPlaceOrder() {
@@ -42,10 +42,10 @@ const BuyCoins = ({ data, modal, setModal }) => {
       let { data: availableUsdCoin } = await supabase
         .from("portfolio")
         .select("coinId,coinName,amount")
-        .eq("userId", `${currentUser.uid}`)
+        .eq("userId", `${currentUser?.uid}`)
         .eq("coinId", "USD");
 
-      if (coinUsdPrice > availableUsdCoin[0].amount) {
+      if (coinUsdPrice > availableUsdCoin[0]?.amount) {
         throw new Error("Not enough coins!");
       }
 
@@ -64,36 +64,36 @@ const BuyCoins = ({ data, modal, setModal }) => {
         let { data: updateExistingCoin, error: updateExistingCoinErr } = await supabase
           .from("portfolio")
           .update({
-            amount: `${Number(existingCoin[0].amount) + Number(coinUsdPrice)}`,
-            coinAmount: `${Number(existingCoin[0].coinAmount) + Number(coinValue)}`
+            amount: `${Number(existingCoin[0]?.amount) + Number(coinUsdPrice)}`,
+            coinAmount: `${Number(existingCoin[0]?.coinAmount) + Number(coinValue)}`
           })
           .eq("userId", `${currentUser.uid}`)
           .eq("coinId", `${data.id}`);
 
         // deduct the value from virtual usd
-        let updatedUsdValue = availableUsdCoin[0].amount - coinUsdPrice;
+        let updatedUsdValue = availableUsdCoin[0]?.amount - coinUsdPrice;
 
         let { data: updateUsdCoin, error: updateUsdCoinError } = await supabase
           .from("portfolio")
           .update({ amount: parseFloat(updatedUsdValue) })
-          .eq("userId", `${currentUser.uid}`)
+          .eq("userId", `${currentUser?.uid}`)
           .eq("coinId", "USD");
 
         // calculate networth
         let { data: portfolioData } = await supabase
           .from("portfolio")
           .select("*")
-          .eq("userId", `${currentUser.uid}`);
+          .eq("userId", `${currentUser?.uid}`);
 
         const userNetworth = portfolioData.reduce(
-          (previousValue, currentCoin) => previousValue + currentCoin.amount,
+          (previousValue, currentCoin) => previousValue + currentCoin?.amount,
           0
         );
 
         const { data: updateNetworth, error: updateErr } = await supabase
           .from("users")
           .update({ networth: parseFloat(userNetworth) })
-          .eq("userId", `${currentUser.uid}`);
+          .eq("userId", `${currentUser?.uid}`);
 
         console.log(updateNetworth, userNetworth, portfolioData, updateUsdCoin);
 
@@ -115,11 +115,11 @@ const BuyCoins = ({ data, modal, setModal }) => {
           error: addToPortfolioError
         } = await supabase.from("portfolio").insert([
           {
-            userId: `${currentUser.uid}`,
-            coinId: `${data.id}`,
-            coinSymbol: `${data.symbol}`,
-            coinName: `${data.name}`,
-            image: `${data.image.large}`,
+            userId: `${currentUser?.uid}`,
+            coinId: `${data?.id}`,
+            coinSymbol: `${data?.symbol}`,
+            coinName: `${data?.name}`,
+            image: `${data?.image?.large}`,
             amount: `${coinUsdPrice}`,
             coinAmount: `${coinValue}`
           }
@@ -130,7 +130,7 @@ const BuyCoins = ({ data, modal, setModal }) => {
         }
 
         // deduct the value from virtual usd
-        let updatedUsdValue = availableUsdCoin[0].amount - coinUsdPrice;
+        let updatedUsdValue = availableUsdCoin[0]?.amount - coinUsdPrice;
 
         let {
           // data: updateUsdCoin,
@@ -138,7 +138,7 @@ const BuyCoins = ({ data, modal, setModal }) => {
         } = await supabase
           .from("portfolio")
           .update({ amount: updatedUsdValue })
-          .eq("userId", `${currentUser.uid}`)
+          .eq("userId", `${currentUser?.uid}`)
           .eq("coinId", "USD");
 
         if (updateUsdCoinError) {
@@ -149,17 +149,17 @@ const BuyCoins = ({ data, modal, setModal }) => {
         let { data: portfolioData } = await supabase
           .from("portfolio")
           .select("*")
-          .eq("userId", `${currentUser.uid}`);
+          .eq("userId", `${currentUser?.uid}`);
 
         const userNetworth = portfolioData.reduce(
-          (previousValue, currentCoin) => previousValue + currentCoin.amount,
+          (previousValue, currentCoin) => previousValue + currentCoin?.amount,
           0
         );
 
         const { data: updateNetworth, error: updateErr } = await supabase
           .from("users")
           .update({ networth: parseFloat(userNetworth) })
-          .eq("userId", `${currentUser.uid}`);
+          .eq("userId", `${currentUser?.uid}`);
 
         console.log(updateNetworth, userNetworth);
         setOrderLoading(false);
@@ -186,7 +186,7 @@ const BuyCoins = ({ data, modal, setModal }) => {
           {/* Modal header  */}
           <div className="flex justify-between items-center px-5 py-3 md:p-5 rounded-t border-b border-gray-600">
             <h3 className="text-md md:text-xl font-medium  text-white">
-              Buy {data.name} | <span className="uppercase">{data.symbol}</span>
+              Buy {data?.name} | <span className="uppercase">{data?.symbol}</span>
             </h3>
             <button
               type="button"
@@ -200,18 +200,18 @@ const BuyCoins = ({ data, modal, setModal }) => {
           {/* Modal body  */}
           <div className="px-6 py-3 md:p-6">
             <p className="text-base leading-relaxed font-semibold text-gray-200">
-              1 <span className="uppercase">{data.symbol}</span> ={" "}
-              {data.market_data.current_price.usd} USD
+              1 <span className="uppercase">{data?.symbol}</span> ={" "}
+              {data?.market_data?.current_price?.usd} USD
             </p>
 
             <p className="text-base leading-relaxed font-semibold text-gray-200">
               Available Balance ={" "}
-              {availableUsdCoins.status === "success" ? availableUsdCoins.data.amount : 0} USD
+              {availableUsdCoins?.status === "success" ? availableUsdCoins?.data?.amount : 0} USD
             </p>
 
             <div className="relative py-4">
               <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                <img src={data?.image?.small} alt={data.name} className="h-5 w-5" />
+                <img src={data?.image?.small} alt={data?.name} className="h-5 w-5" />
               </div>
               <input
                 type="number"
@@ -251,7 +251,7 @@ const BuyCoins = ({ data, modal, setModal }) => {
               className="text-white  focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
               onClick={onPlaceOrder}
             >
-              {orderLoading ? `Buying ${data.name}...` : `Buy ${data.name}`}
+              {orderLoading ? `Buying ${data?.name}...` : `Buy ${data?.name}`}
             </button>
           </div>
         </div>

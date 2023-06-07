@@ -33,7 +33,7 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
     error: fetchWatchlistErr,
     isLoading: fetchWatchlistLoading,
     isSuccess: fetchWatchlistSuccess
-  } = useGetWatchlistDataQuery(currentUser.uid);
+  } = useGetWatchlistDataQuery(currentUser?.uid);
 
   // Get user networth
   const {
@@ -42,7 +42,7 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
     isLoading: userNetworthLoading,
     refetch: refetchUserNetworth
     // error: networthError
-  } = useGetUserNetworthQuery(currentUser.uid);
+  } = useGetUserNetworthQuery(currentUser?.uid);
 
   // get news
   const {
@@ -93,7 +93,7 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
           <div className="flex justify-between">
             <div className="">
               <h4 className="">Name</h4>
-              <p className="font-semibold tracking-wide">{currentUser.displayName}</p>
+              <p className="font-semibold tracking-wide">{currentUser?.displayName}</p>
             </div>
             <img
               className="w-14 h-14"
@@ -148,15 +148,19 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
                     className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 "
                   >
                     <div className="flex items-center justify-start text-sm space-x-3">
-                      <img src={coin.item.large} alt={`${coin.item.name}`} className="w-10 h-10" />
+                      <img
+                        src={coin.item.large}
+                        alt={`${coin?.item?.name}`}
+                        className="w-10 h-10"
+                      />
                       <div className="font-text">
-                        <p className="text-white text-xl font-bold ">{coin.item.name}</p>
-                        <p className="text-white text-sm">{coin.item.symbol}</p>
+                        <p className="text-white text-xl font-bold ">{coin?.item?.name}</p>
+                        <p className="text-white text-sm">{coin?.item?.symbol}</p>
                       </div>
                     </div>
                     <div>
                       <p className="font-text text-xl">
-                        <p className="text-white">${coin.item.price_btc.toFixed(9)}</p>
+                        <p className="text-white">${coin?.item.price_btc?.toFixed(9)}</p>
                       </p>
                     </div>
                   </li>
@@ -195,15 +199,15 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
                   className="flex items-center font-text text-gray-200 justify-between py-3 border-b-2 border-gray-800 "
                 >
                   <div className="flex items-center justify-start text-sm space-x-3">
-                    <img src={coin.image.large} alt={`${coin.name}`} className="w-10 h-10" />
+                    <img src={coin?.image?.large} alt={`${coin?.name}`} className="w-10 h-10" />
                     <div className="">
-                      <p className="text-white text-xl font-bold ">{coin.name}</p>
-                      <p className="text-white uppercase text-sm">{coin.symbol}</p>
+                      <p className="text-white text-xl font-bold ">{coin?.name}</p>
+                      <p className="text-white uppercase text-sm">{coin?.symbol}</p>
                     </div>
                   </div>
                   <div className="">
                     <p className="text-white font-bold">
-                      ${coin.market_data.current_price.usd}
+                      ${coin?.market_data.current_price?.usd}
                       <br />
                     </p>
                     <p
@@ -276,11 +280,11 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
                   )}
                 </div>
                 <div className="flex items-center justify-start ml-auto md:ml-0 ">
-                  <p className="w-28 md:w-40 truncate text-white font-medium">{user.username}</p>
+                  <p className="w-28 md:w-40 truncate text-white font-medium">{user?.username}</p>
                 </div>
                 <div className="flex items-center justify-end ml-auto md:ml-0 ">
                   <p className="w-28 md:w-40 break-all text-white font-medium text-right">
-                    ${user.networth}
+                    ${user?.networth}
                   </p>
                 </div>
               </li>
@@ -306,9 +310,9 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
 
               <div className="justify-between sm:flex">
                 <div>
-                  <h5 className="font-title text-lg font-bold text-white">{news.name}</h5>
+                  <h5 className="font-title text-lg font-bold text-white">{news?.name}</h5>
                   <p className="font-title mt-2 text-xs font-medium text-gray-300">
-                    By {news.provider[0].name}
+                    By {news?.provider[0]?.name}
                   </p>
                 </div>
 
@@ -322,13 +326,13 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
               </div>
 
               <div className="font-text mt-4 sm:pr-8">
-                <p className="text-sm text-gray-400 line-clamp-4">{news.description}</p>
+                <p className="text-sm text-gray-400 line-clamp-4">{news?.description}</p>
               </div>
 
               <dl className="font-text flex mt-6">
                 <div className="flex flex-col-reverse">
                   <dt className="text-sm font-medium text-gray-500">Published</dt>
-                  <dd className="text-xs text-gray-300">{news.datePublished.substring(0, 10)}</dd>
+                  <dd className="text-xs text-gray-300">{news?.datePublished?.substring(0, 10)}</dd>
                 </div>
               </dl>
             </a>
