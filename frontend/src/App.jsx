@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { LocalNotifications } from "@capacitor/local-notifications";
-import { AdMob, AdmobConsentStatus } from "@capacitor-community/admob";
+import { AdMob, AdmobConsentStatus, AdmobConsentDebugGeography } from "@capacitor-community/admob";
 
 import "./App.css";
 
@@ -88,13 +88,12 @@ function App() {
 
       console.log("init admob", init);
 
-      const [trackingInfo, consentInfo] = await Promise.all([
+      const [trackingInfo] = await Promise.all([
         AdMob.trackingAuthorizationStatus()
         // AdMob.requestConsentInfo()
       ]);
 
       console.log("trackingInfo", trackingInfo.status);
-      console.log("consentInfo", consentInfo);
 
       if (trackingInfo.status === "notDetermined") {
         /**
@@ -112,19 +111,27 @@ function App() {
       }
 
       const authorizationStatus = await AdMob.trackingAuthorizationStatus();
+      const consentInfo = await AdMob.requestConsentInfo();
 
       // console.log(
       //   "burrrrrrrrrrrrrrr",
+      //   consentInfo,
       //   consentInfo?.status,
       //   consentInfo?.isConsentFormAvailable,
       //   AdmobConsentStatus.REQUIRED
       // );
+
       if (
         authorizationStatus.status === "authorized" &&
         consentInfo?.isConsentFormAvailable &&
         consentInfo?.status === AdmobConsentStatus.REQUIRED
       ) {
-        await AdMob.showConsentForm();
+        const { status } = await AdMob.showConsentForm({
+          // debugGeography: AdmobConsentDebugGeography.EEA,
+          // testDeviceIdentifiers: ["35E5B1E6DAB4AFD054C8D3E61FCBA681"]
+        });
+
+        console.log(status);
       }
     }
     initialize();
