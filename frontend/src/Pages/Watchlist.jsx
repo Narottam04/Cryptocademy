@@ -18,7 +18,7 @@ import { useGetWatchlistDataQuery } from "../services/supabaseApi";
 
 import Loader from "../Components/Loader";
 
-const trailingActions = (coinId, userId, refetch) => {
+const trailingActions = (coinId, userId, coinSymbol, refetch) => {
   async function handleDelete() {
     try {
       const {
@@ -45,7 +45,11 @@ const trailingActions = (coinId, userId, refetch) => {
         Delete
       </SwipeAction>
       <SwipeAction>
-        <Link to={`/app/coin/${coinId}`} className="bg-blue-500 py-5 px-3  text-white font-bold">
+        <Link
+          to={`/app/coin/${coinId}`}
+          state={{ symbol: coinSymbol }}
+          className="bg-blue-500 py-5 px-3  text-white font-bold"
+        >
           View
         </Link>
       </SwipeAction>
@@ -67,7 +71,7 @@ const Watchlist = () => {
   } = useGetWatchlistDataQuery(currentUser.uid);
 
   useEffect(() => {
-    const interval = setInterval(() => refetch(), 2000);
+    const interval = setInterval(() => refetch(), 30000);
 
     return () => {
       clearInterval(interval);
@@ -90,11 +94,26 @@ const Watchlist = () => {
     return marketCap;
   };
 
+  const formatCryptoPrice = (price, maxDecimalPlaces = 8) => {
+    const parsedPrice = parseFloat(price);
+
+    if (isNaN(parsedPrice)) {
+      // Handle the case where the price is not a valid number
+      return "Invalid Price";
+    }
+
+    // Determine the magnitude of the number
+    const magnitude = Math.floor(Math.log10(Math.abs(parsedPrice)));
+
+    // Use Number.toFixed() to round the number to the appropriate decimal places
+    const decimalPlaces = Math.max(maxDecimalPlaces - magnitude, 0);
+    const roundedPrice = parsedPrice.toFixed(decimalPlaces);
+
+    return roundedPrice;
+  };
   return (
-    <section className="lg:px-4 py-2 lg:py-8  max-w-[1600px]">
-      <p className="text-white font-bold text-2xl md:text-3xl font-title mt-4 lg:mt-0 mb-4 ml-3">
-        WatchList
-      </p>
+    <section className="mt-[30px] lg:mt-0 lg:px-4 pb-2 lg:py-8  max-w-[1600px]">
+      <p className="text-white font-bold text-2xl md:text-3xl font-title  mb-4 ml-3">WatchList</p>
       <p className="text-white font-semibold text-md font-title  ml-3">
         Swipe left to delete or view the coins.
       </p>
@@ -145,60 +164,56 @@ const Watchlist = () => {
             watchlistData.length !== 0 &&
             watchlistData.map((coin, index) => (
               <SwipeableListItem
-                trailingActions={trailingActions(coin.id, currentUser.uid, refetch)}
+                trailingActions={trailingActions(coin?.id, currentUser?.uid, coin?.symbol, refetch)}
                 key={index}
               >
                 <div className="grid grid-cols-2 md:grid-cols-4 text-gray-500 py-2 px-1md:px-5 hover:bg-gray-900 rounded-lg cursor-pointer border-b-2 border-gray-800 xl:w-full">
                   <div className="flex items-center space-x-2 ">
                     <p className="pl-1">{index + 1}</p>
-                    <img
+                    {/* <img
                       className="h-8 w-8 md:h-10 md:w-10 object-contain"
                       src={coin.image.small}
                       alt="cryptocurrency"
                       loading="lazy"
-                    />
+                    /> */}
                     <div>
-                      <p className=" w-64 truncate text-white break-words font-semibold">
+                      <p className=" w-64 truncate text-white font-semibold break-words">
                         {coin.name}
                       </p>
                       <div className="flex space-x-1">
                         <p>{coin.symbol}</p>
                         <p
                           className={`md:hidden w-24 md:w-40 ${
-                            coin?.market_data.price_change_percentage_24h >= 0
-                              ? "text-green-400"
-                              : "text-red-400"
+                            coin?.changePercent24Hr >= 0 ? "text-green-400" : "text-red-400"
                           } font-semibold`}
                         >
-                          {coin?.market_data.price_change_percentage_24h >= 0 && "+"}
-                          {coin?.market_data.price_change_percentage_24h?.toFixed(2)}%
+                          {coin?.changePercent24Hr >= 0 && "+"}
+                          {parseFloat(coin?.changePercent24Hr).toFixed(2)}%
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center justify-end ml-auto md:ml-0 ">
                     <p className="w-28 md:w-40 text-white font-semibold">
-                      ${coin?.market_data.current_price.usd}
+                      ${formatCryptoPrice(coin.priceUsd)}
                       <br />
                       <span className="md:hidden w-28 md:w-40 text-gray-500">
-                        MCap: {normalizeMarketCap(coin?.market_data.market_cap.usd)}
+                        MCap: {normalizeMarketCap(coin.marketCapUsd)}
                       </span>
                     </p>
                   </div>
                   <div className="hidden md:flex items-center justify-end ml-auto md:ml-0 ">
                     <p
                       className={`w-24 md:w-40 ${
-                        coin?.market_data.price_change_percentage_24h >= 0
-                          ? "text-green-400"
-                          : "text-red-400"
+                        coin?.changePercent24Hr >= 0 ? "text-green-400" : "text-red-400"
                       } font-semibold`}
                     >
-                      {coin?.market_data.price_change_percentage_24h >= 0 && "+"}
-                      {coin?.market_data.price_change_percentage_24h?.toFixed(2)}%
+                      {coin?.changePercent24Hr >= 0 && "+"}
+                      {parseFloat(coin?.changePercent24Hr).toFixed(2)}%
                     </p>
                   </div>
                   <div className="hidden md:flex items-center justify-end ml-auto md:ml-0 ">
-                    <p className="w-24 md:w-40  ">${coin?.market_data.market_cap.usd}</p>
+                    <p className="w-24 md:w-40  ">${parseFloat(coin.marketCapUsd).toFixed(2)}</p>
                   </div>
                 </div>
               </SwipeableListItem>

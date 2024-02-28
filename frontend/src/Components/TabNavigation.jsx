@@ -5,12 +5,12 @@ import { MdOutlineDashboard, MdOutlineMoreHoriz, MdOutlineStarBorder } from "rea
 
 const TabNavigation = () => {
   return (
-    <div className="  w-full h-[200px] lg:hidden z-50 ">
+    <div className=" w-full h-[200px] lg:hidden z-50 ">
       <section
         id="bottom-navigation"
         className="block fixed inset-x-0 bottom-0 z-10 bg-gradient-to-b from-gray-900 to-black rounded-t-3xl "
       >
-        <div id="tabs" className="flex justify-between">
+        <div id="tabs" className="flex justify-between pb-[60px]">
           <Link
             to="/app"
             className="w-full focus:text-teal-500 hover:text-teal-500 justify-center inline-block text-center pt-2 pb-1"

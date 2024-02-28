@@ -16,8 +16,7 @@ import logo from "../Assets/svg/cryptocademy-logo-sideways-light.svg";
 import { useAuth } from "../Context/AuthContext";
 
 const Sidebar = ({ openSidebar, active }) => {
-  const { currentUser } = useAuth();
-
+  const { currentUser, profileSVG } = useAuth();
   return (
     <aside
       className={`sidebar w-64 md:shadow transform ${
@@ -193,9 +192,14 @@ const Sidebar = ({ openSidebar, active }) => {
               to="/app/profile"
               className="flex items-center p-2 mt-5 space-x-4 justify-self-end cursor-pointer"
             >
-              <img
-                src={`https://avatars.dicebear.com/api/initials/${currentUser.displayName}.svg`}
+              {/* <img
+                src={`https://api.dicebear.com/7.x/fun-emoji/svg?flip=false&seed=${currentUser.displayName}`}
                 alt=""
+                className="w-12 h-12 rounded-lg dark:bg-gray-500"
+              /> */}
+              {/* use profileSVG here and apply above classname */}
+              <div
+                dangerouslySetInnerHTML={{ __html: profileSVG }}
                 className="w-12 h-12 rounded-lg dark:bg-gray-500"
               />
               <div>

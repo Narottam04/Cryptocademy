@@ -24,6 +24,10 @@ const config: CapacitorConfig = {
       providers: ["google.com"]
     }
   }
+  // server: {
+  //   url: "http://192.168.0.106:5174",
+  //   cleartext: true
+  // }
 };
 
 export default config;

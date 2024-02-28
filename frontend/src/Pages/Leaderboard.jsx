@@ -41,8 +41,8 @@ const Leaderboard = () => {
   // }
 
   return (
-    <section className="lg:px-4 py-2 lg:py-8 max-w-[1600px]">
-      <p className="text-white font-bold text-2xl md:text-3xl font-title mt-4 mb-4 lg:mt-0 ml-3 px-2 md:px-4">
+    <section className="mt-[30px] lg:mt-0 lg:px-4 py-2 lg:py-8 max-w-[1600px]">
+      <p className="text-white font-bold text-2xl md:text-3xl font-title  mb-4  ml-3 px-2 md:px-4">
         Global Leaderboard
       </p>
       {isLoading && <Loader />}

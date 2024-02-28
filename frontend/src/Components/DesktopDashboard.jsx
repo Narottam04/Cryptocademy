@@ -75,6 +75,24 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
     refetchUserNetworth();
   }, [location?.state]);
 
+  const formatCryptoPrice = (price, maxDecimalPlaces = 8) => {
+    const parsedPrice = parseFloat(price);
+
+    if (isNaN(parsedPrice)) {
+      // Handle the case where the price is not a valid number
+      return "Invalid Price";
+    }
+
+    // Determine the magnitude of the number
+    const magnitude = Math.floor(Math.log10(Math.abs(parsedPrice)));
+
+    // Use Number.toFixed() to round the number to the appropriate decimal places
+    const decimalPlaces = Math.max(maxDecimalPlaces - magnitude, 0);
+    const roundedPrice = parsedPrice.toFixed(decimalPlaces);
+
+    return roundedPrice;
+  };
+
   return (
     <>
       {/* loading State */}
@@ -145,15 +163,19 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
                     className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 "
                   >
                     <div className="flex items-center justify-start text-sm space-x-3">
-                      <img src={coin.item.large} alt={`${coin.item.name}`} className="w-10 h-10" />
+                      <img
+                        src={coin.item.large}
+                        alt={`${coin?.item?.name}`}
+                        className="w-10 h-10"
+                      />
                       <div className="font-text">
-                        <p className="text-white text-xl font-bold ">{coin.item.name}</p>
-                        <p className="text-white text-sm">{coin.item.symbol}</p>
+                        <p className="text-white text-xl font-bold ">{coin?.item?.name}</p>
+                        <p className="text-white text-sm">{coin?.item.symbol}</p>
                       </div>
                     </div>
                     <div>
                       <p className="font-text text-xl">
-                        <p className="text-white">${coin.item.price_btc.toFixed(9)}</p>
+                        <p className="text-white">${coin?.item?.price_btc?.toFixed(9)}</p>
                       </p>
                     </div>
                   </li>
@@ -192,26 +214,24 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
                   className="flex items-center font-text text-gray-200 justify-between py-3 border-b-2 border-gray-800 "
                 >
                   <div className="flex items-center justify-start text-sm space-x-3">
-                    <img src={coin.image.large} alt={`${coin.name}`} className="w-10 h-10" />
+                    {/* <img src={coin.image.large} alt={`${coin?.name}`} className="w-10 h-10" /> */}
                     <div className="">
-                      <p className="text-white text-xl font-bold ">{coin.name}</p>
-                      <p className="text-white uppercase text-sm">{coin.symbol}</p>
+                      <p className="text-white text-xl font-bold ">{coin?.name}</p>
+                      <p className="text-white uppercase text-sm">{coin?.symbol}</p>
                     </div>
                   </div>
                   <div className="">
                     <p className="text-white font-bold">
-                      ${coin.market_data.current_price.usd}
+                      ${formatCryptoPrice(coin?.priceUsd)}
                       <br />
                     </p>
                     <p
-                      className={`text-right ${
-                        coin?.market_data.price_change_percentage_24h >= 0
-                          ? "text-green-400"
-                          : "text-red-400"
+                      className={`w-24 md:w-40 ${
+                        coin?.changePercent24Hr >= 0 ? "text-green-400" : "text-red-400"
                       } font-semibold`}
                     >
-                      {coin?.market_data.price_change_percentage_24h >= 0 && "+"}
-                      {coin?.market_data.price_change_percentage_24h?.toFixed(2)}%
+                      {coin?.changePercent24Hr >= 0 && "+"}
+                      {parseFloat(coin?.changePercent24Hr).toFixed(2)}%
                     </p>
                   </div>
                 </li>
@@ -303,12 +323,11 @@ const DesktopDashboard = ({ userNetworth: networth, availableCoins }) => {
 
               <div className="justify-between sm:flex">
                 <div>
-                  <h5 className="font-title text-lg font-bold text-white">{news.name}</h5>
+                  <h5 className="font-title text-lg font-bold text-white">{news?.name}</h5>
                   <p className="font-title mt-2 text-xs font-medium text-gray-300">
-                    By {news.provider[0].name}
+                    By {news?.provider[0]?.name}
                   </p>
                 </div>
-
                 <div className="flex-shrink-0 hidden ml-3 sm:block">
                   <img
                     className="object-cover w-16 h-16 rounded-lg shadow-sm"

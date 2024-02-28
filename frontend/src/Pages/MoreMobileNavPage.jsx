@@ -9,16 +9,20 @@ import { HiAcademicCap } from "react-icons/hi";
 import { useAuth } from "../Context/AuthContext";
 
 const MoreMobileNavPage = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, profileSVG } = useAuth();
 
   return (
     <>
-      <Link to="/app/profile" className="px-4 mt-3 flex justify-between items-center ">
+      <Link to="/app/profile" className="px-4 mt-[30px] flex justify-between items-center ">
         <div className="flex items-center p-2  space-x-4 justify-self-end cursor-pointer">
-          <img
+          {/* <img
             src={`https://avatars.dicebear.com/api/initials/${currentUser.displayName}.svg`}
             alt=""
             className="w-12 h-12 rounded-full dark:bg-gray-500"
+          /> */}
+          <div
+            dangerouslySetInnerHTML={{ __html: profileSVG }}
+            className="w-12 h-12 rounded-lg dark:bg-gray-500"
           />
           <div>
             <h2 className="text-lg font-semibold text-white">{currentUser.displayName}</h2>

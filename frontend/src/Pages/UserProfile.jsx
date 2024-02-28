@@ -16,7 +16,7 @@ const Logout = lazy(() => import("../Components/Buttons/Logout"));
 const ResetVirtualBalance = lazy(() => import("../Components/ResetVirtualBalance"));
 
 const UserProfile = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, profileSVG } = useAuth();
 
   const [resetModal, setResetModal] = useState(false);
 
@@ -61,9 +61,26 @@ const UserProfile = () => {
     // refetch: refetchPortfolioData
   } = useGetPortfolioDataQuery(currentUser.uid);
 
+  const formatCryptoPrice = (price, maxDecimalPlaces = 8) => {
+    const parsedPrice = parseFloat(price);
+
+    if (isNaN(parsedPrice)) {
+      // Handle the case where the price is not a valid number
+      return "Invalid Price";
+    }
+
+    // Determine the magnitude of the number
+    const magnitude = Math.floor(Math.log10(Math.abs(parsedPrice)));
+
+    // Use Number.toFixed() to round the number to the appropriate decimal places
+    const decimalPlaces = Math.max(maxDecimalPlaces - magnitude, 0);
+    const roundedPrice = parsedPrice.toFixed(decimalPlaces);
+
+    return roundedPrice;
+  };
   return (
     <section className="lg:px-4 py-2 lg:py-8  max-w-[1600px]">
-      <p className="text-white font-bold text-2xl md:text-3xl font-title mt-4 mb-4 lg:mt-0 ml-3">
+      <p className="text-white font-bold text-2xl md:text-3xl font-title mt-12 mb-4 lg:mt-0 ml-3">
         Your Profile
       </p>
 
@@ -76,10 +93,14 @@ const UserProfile = () => {
           />
           <div className="px-4 py-5 sm:p-6 ">
             <div className="flex items-center p-2  space-x-4 justify-self-end cursor-pointer">
-              <img
+              {/* <img
                 src={`https://avatars.dicebear.com/api/initials/${currentUser.displayName}.svg`}
                 alt=""
                 className="w-12 h-12 rounded-full dark:bg-gray-500"
+              /> */}
+              <div
+                dangerouslySetInnerHTML={{ __html: profileSVG }}
+                className="w-12 h-12 rounded-lg dark:bg-gray-500"
               />
               <div>
                 <h2 className="text-lg font-semibold text-white font-title">
@@ -185,28 +206,29 @@ const UserProfile = () => {
             ) : (
               fetchWatchlistSuccess &&
               watchlistData.slice(0, 7).map((coin, index) => (
-                <li className="font-text flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+                <li
+                  key={index}
+                  className="font-text flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 "
+                >
                   <div className="flex items-center justify-start text-sm space-x-3">
-                    <img src={coin.image.large} alt={`${coin.name}`} className="w-10 h-10" />
+                    {/* <img src={coin.image.large} alt={`${coin.name}`} className="w-10 h-10" /> */}
                     <div className="">
-                      <p className="text-white text-xl font-bold ">{coin.name}</p>
-                      <p className="text-white text-sm uppercase">{coin.symbol}</p>
+                      <p className="text-white text-xl font-bold ">{coin?.name}</p>
+                      <p className="text-white text-sm uppercase">{coin?.symbol}</p>
                     </div>
                   </div>
                   <div className="">
                     <p className="text-white font-semibold">
-                      ${coin.market_data.current_price.usd}
+                      ${coin?.priceUsd}
                       <br />
                     </p>
                     <p
-                      className={`text-right ${
-                        coin?.market_data.price_change_percentage_24h >= 0
-                          ? "text-green-400"
-                          : "text-red-400"
+                      className={`w-24 md:w-40 ${
+                        coin?.changePercent24Hr >= 0 ? "text-green-400" : "text-red-400"
                       } font-semibold`}
                     >
-                      {coin?.market_data.price_change_percentage_24h >= 0 && "+"}
-                      {coin?.market_data.price_change_percentage_24h?.toFixed(2)}%
+                      {coin?.changePercent24Hr >= 0 && "+"}
+                      {parseFloat(coin?.changePercent24Hr).toFixed(2)}%
                     </p>
                   </div>
                 </li>
@@ -239,20 +261,23 @@ const UserProfile = () => {
             ) : (
               isSuccess &&
               portfolioData.slice(0, 7).map((coin, index) => (
-                <li className="flex items-center font-text text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+                <li
+                  key={index}
+                  className="flex items-center font-text text-gray-200 justify-between py-3 border-b-2 border-gray-800 "
+                >
                   <div className="flex items-center justify-start text-sm space-x-3">
-                    <img src={coin.image} alt={`${coin.coinName}`} className="w-10 h-10" />
+                    {/* <img src={coin.image} alt={`${coin.coinName}`} className="w-10 h-10" /> */}
                     <div className="">
-                      <p className="text-white text-xl font-bold ">{coin.coinName}</p>
-                      <p className="text-white text-sm uppercase">{coin.coinSymbol}</p>
+                      <p className="text-white text-xl font-bold ">{coin?.coinName}</p>
+                      <p className="text-white text-sm uppercase">{coin?.coinSymbol}</p>
                     </div>
                   </div>
                   <div className="">
                     <p className="text-white font-semibold text-right">
-                      {coin.coinAmount} {coin.coinSymbol}
+                      {coin?.coinAmount} {coin?.coinSymbol}
                       <br />
                     </p>
-                    <p className="text-gray-400 font-semibold text-right">${coin.amount}</p>
+                    <p className="text-gray-400 font-semibold text-right">${coin?.amount}</p>
                   </div>
                 </li>
               ))

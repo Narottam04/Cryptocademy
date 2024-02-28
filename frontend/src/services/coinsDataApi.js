@@ -10,9 +10,46 @@ export const coinsDataApi = createApi({
       query: ({ currency, page }) =>
         `/markets?vs_currency=${currency}&order=market_cap_desc&per_page=250&page=${page}&sparkline=false`
     }),
+    getCoinsData1: builder.query({
+      queryFn: async ({ page }) => {
+        try {
+          const res = await fetch(
+            `https://api.coincap.io/v2/assets?offset=${page ? (page - 1) * 100 : 0}`
+          );
+
+          if (!res.ok) {
+            throw new Error("Something went wrong! Please try again");
+          }
+
+          const data = await res.json();
+
+          return { data };
+        } catch (error) {
+          return { error: error };
+        }
+      }
+    }),
     getCoinData: builder.query({
       query: (id) => `/${id}`
     }),
+    getCoinData1: builder.query({
+      queryFn: async ({ id }) => {
+        try {
+          const res = await fetch(`https://api.coincap.io/v2/assets?ids=${id}`);
+
+          if (!res.ok) {
+            throw new Error("Something went wrong! Please try again");
+          }
+
+          const data = await res.json();
+
+          return { data };
+        } catch (error) {
+          return { error: error };
+        }
+      }
+    }),
+
     getTrendingCoinData: builder.query({
       queryFn: async () => {
         try {
@@ -32,6 +69,24 @@ export const coinsDataApi = createApi({
     }),
     getHistoricalData: builder.query({
       query: (options) => `/${options.id}/ohlc?vs_currency=usd&days=${options.chartDays}`
+    }),
+    getHistoricalData1: builder.query({
+      queryFn: async ({ id, chartDays }) => {
+        try {
+          const res = await fetch(
+            `https://api.coincap.io/v2/assets/${id}/history?interval=${chartDays}`
+          );
+
+          if (!res.ok) {
+            throw new Error("Something went wrong! Please try again");
+          }
+
+          const data = await res.json();
+          return { data };
+        } catch (error) {
+          return { error: error };
+        }
+      }
     }),
     getGlobalCryptoData: builder.query({
       queryFn: async () => {
@@ -68,8 +123,11 @@ export const coinsDataApi = createApi({
 
 export const {
   useGetCoinsDataQuery,
+  useGetCoinsData1Query,
   useGetCoinDataQuery,
+  useGetCoinData1Query,
   useGetHistoricalDataQuery,
+  useGetHistoricalData1Query,
   useGetTrendingCoinDataQuery,
   useGetGlobalCryptoDataQuery
 } = coinsDataApi;

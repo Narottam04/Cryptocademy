@@ -29,17 +29,17 @@ const Portfolio = () => {
 
   const {
     data: portfolioCoinData,
-    // error: fetchPortfolioCoinDataError,
+    error: fetchPortfolioCoinDataError,
     isLoading: fetchPortfolioCoinDataLoading,
     isSuccess: fetchPortfolioCoinDataSuccess,
     refetch: refetchPortfolioCoinData
-  } = useGetPortfolioCoinDataQuery(currentUser.uid, { pollingInterval: 5000 });
+  } = useGetPortfolioCoinDataQuery(currentUser.uid, { pollingInterval: 300000 });
 
   // get available coins
   const {
     data: availableUsdCoins,
     isSuccess: fetchAvailableUsdCoinsSuccess,
-    // error: fetchAvailableUsdCoinsError,
+    error: fetchAvailableUsdCoinsError,
     isLoading: fetchAvailableUsdCoinsLoading,
     refetch: refetchAvailableCoins
   } = useFetchAvailableCoinsQuery(currentUser.uid);
@@ -47,9 +47,8 @@ const Portfolio = () => {
   // get coin percentage change
   function percentageChange(coinId, coinAmount, amount) {
     const coinData = portfolioCoinData.filter((coin) => coin.id === coinId);
-
     if (coinData.length !== 0) {
-      const currentCoinPrice = coinData[0]?.market_data.current_price.usd;
+      const currentCoinPrice = coinData[0]?.priceUsd;
       const oneCoinAmount = amount / coinAmount;
       const coinPercentageChange = ((currentCoinPrice - oneCoinAmount) / currentCoinPrice) * 100;
 
@@ -57,6 +56,8 @@ const Portfolio = () => {
     }
     return;
   }
+
+  // console.log(error, fetchPortfolioCoinDataError, fetchAvailableUsdCoinsError);
 
   // Get user networth
   const {
@@ -74,10 +75,8 @@ const Portfolio = () => {
   }, []);
 
   return (
-    <section className=" py-2 lg:py-8 mx-auto max-w-[1600px]">
-      <p className="text-white font-bold text-2xl md:text-3xl font-title mt-4 lg:mt-0  ml-3">
-        Portfolio
-      </p>
+    <section className="mt-[30px] pt-2 lg:mt-0 lg:py-8 mx-auto max-w-[1600px]">
+      <p className="text-white font-bold text-2xl md:text-3xl font-title    ml-3">Portfolio</p>
       {(isLoading || fetchPortfolioCoinDataLoading || fetchAvailableUsdCoinsLoading) && <Loader />}
       {error && <p className="text-red-400 text-xl">Something went wrong!</p>}
       {/* available coin and networth */}
@@ -150,17 +149,19 @@ const Portfolio = () => {
             return (
               <li
                 key={index}
-                onClick={() => navigate(`/app/coin/${coin.coinId}`)}
+                onClick={() =>
+                  navigate(`/app/coin/${coin.coinId}`, { state: { symbol: coin.coinSymbol } })
+                }
                 className="grid grid-cols-3 text-gray-500 py-2 px-1md:px-5 hover:bg-gray-900 rounded-lg cursor-pointer border-b-2 border-gray-800 "
               >
                 <div className="flex items-center space-x-2 ">
                   <p className="pl-1">{index + 1}</p>
-                  <img
+                  {/* <img
                     className="h-8 w-8 md:h-10 md:w-10 object-contain"
                     src={coin.image}
                     alt="cryptocurrency"
                     loading="lazy"
-                  />
+                  /> */}
                   <div>
                     <p className=" w-24 md:w-64 text-white break-words">{coin.coinName}</p>
                     <div className="flex space-x-1">
@@ -184,11 +185,11 @@ const Portfolio = () => {
 
                 <div className="flex items-center justify-start ml-auto md:ml-0 ">
                   <p className="w-28 md:w-40 text-white font-semibold text-left break-words">
-                    {coin.coinAmount ? coin.coinAmount : <span>${coin.amount}</span>}{" "}
-                    {coin.coinAmount && coin.coinSymbol}
+                    {coin?.coinAmount ? coin?.coinAmount : <span>${coin?.amount}</span>}{" "}
+                    {coin?.coinAmount && coin?.coinSymbol}
                     <br />
                     <span className="w-28 md:w-40 text-gray-500 text-left ">
-                      {coin.coinAmount && <span>${coin.amount}</span>}
+                      {coin?.coinAmount && <span>${coin?.amount}</span>}
                     </span>
                   </p>
                 </div>

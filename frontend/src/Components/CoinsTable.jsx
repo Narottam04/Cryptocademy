@@ -3,7 +3,11 @@ import ReactPaginate from "react-paginate";
 import { useNavigate } from "react-router";
 import { Link } from "react-router-dom";
 
-import { useGetCoinsDataQuery, useGetGlobalCryptoDataQuery } from "../services/coinsDataApi";
+import {
+  // useGetCoinsDataQuery,
+  useGetCoinsData1Query,
+  useGetGlobalCryptoDataQuery
+} from "../services/coinsDataApi";
 import ErrorToast from "./ErrorToast";
 import Loader from "./Loader";
 
@@ -15,10 +19,16 @@ const CoinsTable = () => {
 
   const [page, setPage] = useState(1);
 
-  const { data, error, isLoading, isSuccess } = useGetCoinsDataQuery(
-    { currency, page },
-    { pollingInterval: 10000 }
-  );
+  // const {
+  //   data: coingeckoData,
+  // } = useGetCoinsDataQuery({ currency, page }, { pollingInterval: 300000 });
+
+  const {
+    data: data1,
+    error,
+    isLoading,
+    isSuccess
+  } = useGetCoinsData1Query({ page }, { pollingInterval: 300000 });
 
   const {
     data: globalCryptoData,
@@ -56,7 +66,23 @@ const CoinsTable = () => {
     }
     return marketCap;
   };
+  const formatCryptoPrice = (price, maxDecimalPlaces = 8) => {
+    const parsedPrice = parseFloat(price);
 
+    if (isNaN(parsedPrice)) {
+      // Handle the case where the price is not a valid number
+      return "Invalid Price";
+    }
+
+    // Determine the magnitude of the number
+    const magnitude = Math.floor(Math.log10(Math.abs(parsedPrice)));
+
+    // Use Number.toFixed() to round the number to the appropriate decimal places
+    const decimalPlaces = Math.max(maxDecimalPlaces - magnitude, 0);
+    const roundedPrice = parsedPrice.toFixed(decimalPlaces);
+
+    return roundedPrice;
+  };
   return (
     <div className="z-10">
       {(isLoading || fetchGlobalCryptoLoading) && <Loader />}
@@ -159,58 +185,58 @@ const CoinsTable = () => {
         </li>
         {/* coin prices */}
         {isSuccess &&
-          data?.map((coins, index) => (
+          data1?.data?.map((coins, index) => (
             <li
               key={index}
-              onClick={() => navigate(`/app/coin/${coins.id}`)}
+              onClick={() => navigate(`/app/coin/${coins.id}`, { state: { symbol: coins.symbol } })}
               className="grid grid-cols-2 md:grid-cols-4 text-gray-500 py-2 px-1md:px-5 hover:bg-gray-900 rounded-lg cursor-pointer border-b-2 border-gray-800 "
             >
               <div className="flex items-center space-x-2 ">
                 <p className="pl-1">{index + 1}</p>
-                <img
+                {/* <img
                   className="h-8 w-8 md:h-10 md:w-10 object-contain"
                   src={coins.image}
                   alt="cryptocurrency"
                   loading="lazy"
-                />
+                /> */}
                 <div>
                   <p className=" w-64 truncate text-white font-semibold break-words">
-                    {coins.name}
+                    {coins?.name}
                   </p>
                   <div className="flex space-x-1">
                     <p>{coins.symbol}</p>
                     <p
                       className={`md:hidden w-24 md:w-40 ${
-                        coins?.price_change_percentage_24h >= 0 ? "text-green-400" : "text-red-400"
+                        coins?.changePercent24Hr >= 0 ? "text-green-400" : "text-red-400"
                       } font-semibold`}
                     >
-                      {coins?.price_change_percentage_24h >= 0 && "+"}
-                      {coins?.price_change_percentage_24h?.toFixed(2)}%
+                      {coins?.changePercent24Hr >= 0 && "+"}
+                      {parseFloat(coins?.changePercent24Hr).toFixed(2)}%
                     </p>
                   </div>
                 </div>
               </div>
               <div className="flex items-center justify-end ml-auto md:ml-0 ">
                 <p className="w-28 md:w-40 text-white font-semibold">
-                  ${coins.current_price}
+                  ${formatCryptoPrice(coins.priceUsd)}
                   <br />
                   <span className="md:hidden w-28 md:w-40 text-gray-500">
-                    MCap: {normalizeMarketCap(coins.market_cap)}
+                    MCap: {normalizeMarketCap(coins.marketCapUsd)}
                   </span>
                 </p>
               </div>
               <div className="hidden md:flex items-center justify-end ml-auto md:ml-0 ">
                 <p
                   className={`w-24 md:w-40 ${
-                    coins?.price_change_percentage_24h >= 0 ? "text-green-400" : "text-red-400"
+                    coins?.changePercent24Hr >= 0 ? "text-green-400" : "text-red-400"
                   } font-semibold`}
                 >
-                  {coins?.price_change_percentage_24h >= 0 && "+"}
-                  {coins?.price_change_percentage_24h?.toFixed(2)}%
+                  {coins?.changePercent24Hr >= 0 && "+"}
+                  {parseFloat(coins?.changePercent24Hr).toFixed(2)}%
                 </p>
               </div>
               <div className="hidden md:flex items-center justify-end ml-auto md:ml-0 ">
-                <p className="w-24 md:w-40  ">${coins.market_cap}</p>
+                <p className="w-24 md:w-40  ">${parseFloat(coins.marketCapUsd).toFixed(2)}</p>
               </div>
             </li>
           ))}
@@ -220,7 +246,7 @@ const CoinsTable = () => {
         previousLabel={"<"}
         nextLabel={">"}
         breakLabel={"..."}
-        pageCount={52}
+        pageCount={23}
         marginPagesDisplayed={2}
         pageRangeDisplayed={1}
         onPageChange={handlePagination}

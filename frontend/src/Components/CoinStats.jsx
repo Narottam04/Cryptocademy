@@ -1,19 +1,23 @@
 import { useState } from "react";
 import usd from "../Assets/svg/USD.svg";
 
-const CoinStats = ({ data }) => {
+const CoinStats = ({ data, priceUsd, price_change_percentage_24h }) => {
   const [coinValue, setCoinValue] = useState(1);
-  const [coinUsdPrice, setCoinUsdPrice] = useState(data.market_data.current_price.usd);
+  const [coinUsdPrice, setCoinUsdPrice] = useState(priceUsd);
 
   const changeCoinValue = (e) => {
     setCoinValue(e.target.value);
-    setCoinUsdPrice(data.market_data.current_price.usd * e.target.value);
+    setCoinUsdPrice(priceUsd * e.target.value);
   };
 
   const changeUsdValue = (e) => {
     setCoinUsdPrice(e.target.value);
-    setCoinValue(e.target.value / data.market_data.current_price.usd);
+    setCoinValue(e.target.value / priceUsd);
   };
+
+  const description = `
+    <p className = "font-text text-white mx-4 mb-4">${data?.description}</p>
+  `;
 
   return (
     <>
@@ -24,10 +28,10 @@ const CoinStats = ({ data }) => {
       <div className="flex  flex-col xl:flex-row items-center">
         <div className="w-[90vw] md:w-1/2 mx-2 md:mx-4 flex space-x-4 justify-between p-2 border-2 border-white rounded-lg">
           <div className="flex items-center space-x-2">
-            <img src={data?.image?.small} className="" alt={data.name} />
+            <img src={data?.image} className="w-10" alt={data?.name} />
             <div>
-              <p className="text-white font-title text-xl font-bold">{data.name}</p>
-              <p className="text-gray-300  uppercase font-semibold">{data.symbol}</p>
+              <p className="text-white font-title text-xl font-bold">{data?.name}</p>
+              <p className="text-gray-300  uppercase font-semibold">{data?.symbol}</p>
             </div>
           </div>
           <div className="mx-2">
@@ -62,7 +66,7 @@ const CoinStats = ({ data }) => {
         </div>
         <div className="w-[90vw] md:w-1/2 mx-2 md:mx-4 flex justify-between p-2 border-2 border-white rounded-lg">
           <div className="flex items-center space-x-2">
-            <img src={usd} width="40" height="45" className="" alt={data.name} />
+            <img src={usd} width="40" height="45" className="" alt={data?.name} />
             <div>
               <p className="text-white font-title  font-bold">United States Dollars</p>
               <p className="text-gray-300  uppercase font-semibold">USD</p>
@@ -81,38 +85,36 @@ const CoinStats = ({ data }) => {
           </div>
         </div>
       </div>
-      {/* coin Description */}
 
+      {/* coin stats */}
       <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-2  mt-8">
         <div className="mx-8">
           <h2 className="text-2xl md:text-3xl text-white font-title font-semibold mt-3 mb-2">
-            <span className="uppercase">{data.symbol}</span> Price Live Data
+            <span className="uppercase">{data?.symbol}</span> Price Live Data
           </h2>
           <p className="text-gray-200 text-lg ">
-            The live {data.name} price today is ${data.market_data.current_price.usd} USD. We update
-            our <span className="uppercase">{data.symbol}</span> to USD price in real-time.{" "}
-            {data.name} is
+            The live {data?.name} price today is ${priceUsd} USD. We update our{" "}
+            <span className="uppercase">{data?.symbol}</span> to USD price in one minute.{" "}
+            {data?.name} is
             <span
               className={`font-bold  ${
-                data?.market_data.price_change_percentage_24h >= 0
-                  ? "text-green-400"
-                  : "text-red-400"
+                price_change_percentage_24h >= 0 ? "text-green-400" : "text-red-400"
               } px-1`}
             >
-              {data?.market_data.price_change_percentage_24h >= 0 && "+"}
-              {data.market_data.price_change_percentage_24h.toFixed(3)}%
+              {price_change_percentage_24h >= 0 && "+"}
+              {price_change_percentage_24h.toFixed(3)}%
             </span>
-            in the last 24 hours. The current market cap ranking is #
-            {data.market_data.market_cap_rank}, with a live market cap of $
+            in the last 24 hours. The current market cap ranking is #{data?.market_cap_rank},
+            {/* with a live market cap of $
             {data.market_data.market_cap.usd} USD. It has a circulating supply of{" "}
             {data.market_data.circulating_supply} <span className="uppercase">{data.symbol}</span>{" "}
-            coins.
+            coins. */}
           </p>
         </div>
 
         <div className=" shadow-lg mx-auto rounded-2xl bg-black w-[90%]">
           <p className="font-bold text-2xl md:text-3xl py-4  text-black dark:text-white">
-            {data.name} Statistics
+            {data?.name} Statistics
           </p>
           <ul>
             <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
@@ -120,7 +122,7 @@ const CoinStats = ({ data }) => {
                 <span className="text-xl">Price To USD</span>
               </div>
               <div>
-                <p className="text-xl">${data.market_data.current_price.usd}</p>
+                <p className="text-xl">${priceUsd}</p>
               </div>
             </li>
 
@@ -129,29 +131,55 @@ const CoinStats = ({ data }) => {
                 <span className="text-xl">Rank</span>
               </div>
               <div>
-                <p className="text-xl">#{data.market_cap_rank}</p>
+                <p className="text-xl">#{data?.market_cap_rank}</p>
+              </div>
+            </li>
+            <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+              <div className="flex items-center justify-start text-sm">
+                <span className="text-xl">Hashing Algorithm</span>
+              </div>
+              <div>
+                <p className="text-xl">{data?.hashing_algorithm ? data?.hashing_algorithm : "-"}</p>
               </div>
             </li>
 
             <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+              <div className="flex items-center justify-start text-sm">
+                <span className="text-xl">Genesis Date</span>
+              </div>
+              <div>
+                <p className="text-xl">{data?.genesis_date ? data?.genesis_date : "-"}</p>
+              </div>
+            </li>
+            <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+              <div className="flex items-center justify-start text-sm">
+                <span className="text-xl">Block Time</span>
+              </div>
+              <div>
+                <p className="text-xl">
+                  {data?.block_time_in_minutes ? `${data?.block_time_in_minutes} mins` : "-"}
+                </p>
+              </div>
+            </li>
+            {/* <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
               <div className="flex items-center justify-start text-sm">
                 <span className="text-xl">Total Volume</span>
               </div>
               <div>
                 <p className="text-xl">${data.market_data.total_volume.usd}</p>
               </div>
-            </li>
+            </li> */}
 
-            <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+            {/* <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
               <div className="flex items-center justify-start text-sm">
                 <span className="text-xl">Market Cap</span>
               </div>
               <div>
                 <p className="text-xl">${data.market_data.market_cap.usd}</p>
               </div>
-            </li>
+            </li> */}
 
-            <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+            {/* <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
               <div className="flex items-center justify-start text-sm">
                 <span className="text-xl">All Time High</span>
               </div>
@@ -167,25 +195,41 @@ const CoinStats = ({ data }) => {
               <div>
                 <p className="text-xl">{data.market_data.circulating_supply}</p>
               </div>
-            </li>
+            </li> */}
           </ul>
         </div>
       </div>
       <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-2  mt-8">
         <div className=" shadow-lg mx-auto rounded-2xl bg-black w-[90%]">
           <p className="font-bold text-2xl md:text-3xl py-4  text-black dark:text-white">
-            {data.name} Social Media Stats
+            {data?.name} Social Media Stats
           </p>
           <ul>
+            <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+              <div className="flex items-center justify-start text-sm">
+                <span className="text-xl">Twitter Name</span>
+              </div>
+              <div>
+                <p className="text-xl">
+                  {data?.twitter_screen_name ? data?.twitter_screen_name : "-"}
+                </p>
+              </div>
+            </li>
             <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
               <div className="flex items-center justify-start text-sm">
                 <span className="text-xl">Twitter Followers</span>
               </div>
               <div>
+                <p className="text-xl">{data?.twitter_followers ? data?.twitter_followers : "-"}</p>
+              </div>
+            </li>
+            <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+              <div className="flex items-center justify-start text-sm">
+                <span className="text-xl">Telegram Channel</span>
+              </div>
+              <div>
                 <p className="text-xl">
-                  {data.community_data.twitter_followers
-                    ? data.community_data.twitter_followers
-                    : "-"}
+                  {data?.telegram_channel_identifier ? data?.telegram_channel_identifier : "-"}
                 </p>
               </div>
             </li>
@@ -196,9 +240,7 @@ const CoinStats = ({ data }) => {
               </div>
               <div>
                 <p className="text-xl">
-                  {data.community_data.reddit_average_posts_48h
-                    ? data.community_data.reddit_average_posts_48h
-                    : "-"}
+                  {data?.reddit_average_posts_48h ? data?.reddit_average_posts_48h : "-"}
                 </p>
               </div>
             </li>
@@ -209,9 +251,7 @@ const CoinStats = ({ data }) => {
               </div>
               <div>
                 <p className="text-xl">
-                  {data.community_data.reddit_average_comments_48h
-                    ? data.community_data.reddit_average_comments_48h
-                    : "-"}
+                  {data?.reddit_average_comments_48h ? data?.reddit_average_comments_48h : "-"}
                 </p>
               </div>
             </li>
@@ -222,9 +262,7 @@ const CoinStats = ({ data }) => {
               </div>
               <div>
                 <p className="text-xl">
-                  {data.community_data.reddit_subscribers
-                    ? data.community_data.reddit_subscribers
-                    : "-"}
+                  {data?.reddit_subscribers ? data?.reddit_subscribers : "-"}
                 </p>
               </div>
             </li>
@@ -233,23 +271,67 @@ const CoinStats = ({ data }) => {
 
         <div className=" shadow-lg mx-auto rounded-2xl bg-black w-[90%]">
           <p className="font-bold text-2xl md:text-3xl py-4  text-black dark:text-white">
-            {data.name} Social Media Links
+            {data?.name} Social Media Links
           </p>
           <ul>
             <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
               <div className="flex items-center justify-start text-sm">
-                <span className="text-xl ">{data.name} Official Website</span>
+                <span className="text-xl ">Official Website</span>
               </div>
               <div>
                 <p className="text-xl text-right">
-                  {data.links.homepage[0] ? (
+                  {data?.homepage ? (
                     <a
-                      href={data.links.homepage[0]}
+                      href={data?.homepage}
                       target="_blank"
                       rel="noreferrer"
                       className="text-emerald-400 underline"
                     >
-                      {data.name} Website
+                      {data?.name} Website
+                    </a>
+                  ) : (
+                    "-"
+                  )}
+                </p>
+              </div>
+            </li>
+
+            <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+              <div className="flex items-center justify-start text-sm">
+                <span className="text-xl ">Whitepaper</span>
+              </div>
+              <div>
+                <p className="text-xl text-right">
+                  {data?.whitepaper ? (
+                    <a
+                      href={data?.whitepaper}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-emerald-400 underline"
+                    >
+                      {data?.name} Whitepaper
+                    </a>
+                  ) : (
+                    "-"
+                  )}
+                </p>
+              </div>
+            </li>
+
+            <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+              <div className="flex items-center justify-start text-sm">
+                <span className="text-xl ">Offical Forum</span>
+              </div>
+              <div>
+                <p className="text-xl text-right">
+                  {data?.official_forum_url ? (
+                    <a
+                      href={data?.official_forum_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-emerald-400 underline"
+                    >
+                      {data?.name} Forum
                     </a>
                   ) : (
                     "-"
@@ -264,15 +346,21 @@ const CoinStats = ({ data }) => {
               </div>
               <div>
                 <p className="text-xl text-right">
-                  {data.links.homepage[0] ? (
-                    <a
-                      href={data.links.blockchain_site[0]}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-emerald-400 underline"
-                    >
-                      {data.name} Transactions
-                    </a>
+                  {data?.blockchain_site ? (
+                    <>
+                      {data?.blockchain_site.split(",").map((site, index) => (
+                        <div key={index} className="mb-4">
+                          <a
+                            href={site.trim()}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-emerald-400 underline block overflow-hidden whitespace-nowrap overflow-ellipsis max-w-[130px] lg:max-w-[300px]"
+                          >
+                            {site.slice("https://".length + 1)}
+                          </a>
+                        </div>
+                      ))}
+                    </>
                   ) : (
                     "-"
                   )}
@@ -280,7 +368,7 @@ const CoinStats = ({ data }) => {
               </div>
             </li>
 
-            <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+            {/* <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
               <div className="flex items-center justify-start text-sm">
                 <span className="text-xl">Official Forum</span>
               </div>
@@ -300,9 +388,9 @@ const CoinStats = ({ data }) => {
                   )}
                 </p>
               </div>
-            </li>
+            </li> */}
 
-            <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
+            {/* <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
               <div className="flex items-center justify-start text-sm">
                 <span className="text-xl">Chat URL</span>
               </div>
@@ -322,7 +410,7 @@ const CoinStats = ({ data }) => {
                   )}
                 </p>
               </div>
-            </li>
+            </li> */}
 
             <li className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 ">
               <div className="flex items-center justify-start text-sm">
@@ -330,9 +418,9 @@ const CoinStats = ({ data }) => {
               </div>
               <div>
                 <p className="text-xl">
-                  {data.links.subreddit_url ? (
+                  {data?.subreddit_url ? (
                     <a
-                      href={data.links.subreddit_url}
+                      href={data?.subreddit_url}
                       target="_blank"
                       rel="noreferrer"
                       className="text-emerald-400 underline"
@@ -352,15 +440,22 @@ const CoinStats = ({ data }) => {
               </div>
               <div>
                 <p className="text-xl">
-                  {data.links.repos_url.github[0] ? (
-                    <a
-                      href={data.links.repos_url.github[0]}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-emerald-400 underline"
-                    >
-                      GitHub URL
-                    </a>
+                  {data?.github_repos ? (
+                    <>
+                      {data?.github_repos.split(",").map((url, idx) => (
+                        <div key={idx}>
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-emerald-400 underline block overflow-hidden whitespace-nowrap overflow-ellipsis max-w-[130px] lg:max-w-[300px]"
+                          >
+                            {url.slice("https://github.com/".length)}
+                          </a>
+                          <br />
+                        </div>
+                      ))}
+                    </>
                   ) : (
                     "-"
                   )}
@@ -371,7 +466,7 @@ const CoinStats = ({ data }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-2  mt-8">
+      {/* <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-2  mt-8">
         <div className=" shadow-lg mx-auto rounded-2xl bg-black w-[90%]">
           <p className="font-bold text-2xl md:text-3xl py-4  text-black dark:text-white">
             {data.name} Percentage Change
@@ -504,6 +599,17 @@ const CoinStats = ({ data }) => {
             </li>
           </ul>
         </div>
+      </div> */}
+
+      {/* coin Description */}
+      <div>
+        <h2 className="text-xl md:text-3xl mx-4 text-white font-title mt-8 mb-4 font-bold ">
+          Description
+        </h2>
+        <div
+          className="font-text  lg:text-lg text-white mx-4 mb-4"
+          dangerouslySetInnerHTML={{ __html: data?.description }}
+        />
       </div>
     </>
   );

@@ -12,6 +12,8 @@ import {
 
 import { auth } from "../Utils/init-firebase";
 import Loader from "../Components/Loader";
+import { createAvatar } from "@dicebear/core";
+import { funEmoji } from "@dicebear/collection";
 
 // create a context with a placeholder value initially
 const AuthContext = createContext();
@@ -23,6 +25,7 @@ export const useAuth = () => useContext(AuthContext);
 export default function AuthContextProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [profileSVG, setProfileSVG] = useState(null);
 
   function signUp(email, password) {
     return createUserWithEmailAndPassword(auth, email, password);
@@ -62,9 +65,24 @@ export default function AuthContextProvider({ children }) {
       if (user) {
         setCurrentUser(user);
         setAuthLoading(false);
+        const avatar = createAvatar(funEmoji, {
+          seed: user.displayName,
+          eyes: ["closed", "cute", "glasses", "shades", "stars", "wink", "wink2"],
+          mouth: ["wideSmile", "cute", "lilSmile", "smileTeeth"],
+          backgroundColor: ["b6e3f4", "c0aede", "d1d4f9", "f6d594", "ffd5dc", "ffdfbf"]
+        });
+        setProfileSVG(avatar.toString());
       } else {
         setCurrentUser(null);
         setAuthLoading(false);
+        const avatar = createAvatar(funEmoji, {
+          seed: "defaultUser",
+          eyes: ["closed", "cute", "glasses", "shades", "stars", "wink", "wink2"],
+          mouth: ["wideSmile", "cute", "lilSmile", "smileTeeth"],
+          backgroundColor: ["b6e3f4", "c0aede", "d1d4f9", "f6d594", "ffd5dc", "ffdfbf"]
+          // ... other options
+        });
+        setProfileSVG(avatar.toString());
       }
     });
 
@@ -81,7 +99,8 @@ export default function AuthContextProvider({ children }) {
     signInWithGoogle,
     forgotPassword,
     updateProfileName,
-    deleteUser
+    deleteUser,
+    profileSVG
   };
 
   if (authLoading === true) {

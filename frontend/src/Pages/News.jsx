@@ -22,12 +22,14 @@ const News = () => {
     }
   }, []);
 
+  console.log(news);
+
   return (
     <>
       {fetchNewsError && <p className="text-red-400 text-xl">Something went Wrong</p>}
       {fetchNewsLoading && <Loader />}
       <section className="px-4 lg:px-4 py-2 lg:py-8 mx-auto max-w-[1600px]">
-        <h2 className="mt-4 lg:mt-0 mb-8 text-2xl md:text-3xl font-extrabold leading-tight text-white font-title">
+        <h2 className="mt-[30px] lg:mt-0 mb-8 text-2xl md:text-3xl font-extrabold leading-tight text-white font-title">
           Cryptocurreny News
         </h2>
 
@@ -44,9 +46,9 @@ const News = () => {
 
                 <div className="justify-between sm:flex font-title">
                   <div>
-                    <h5 className="text-lg font-bold text-white">{news.name}</h5>
+                    <h5 className="text-lg font-bold text-white">{news?.name}</h5>
                     <p className="mt-1 text-xs font-medium text-gray-300">
-                      By {news.provider[0].name}
+                      By {news?.provider[0]?.name}
                     </p>
                   </div>
 
@@ -60,13 +62,15 @@ const News = () => {
                 </div>
 
                 <div className="mt-4 sm:pr-8 font-text">
-                  <p className="text-sm text-gray-400 line-clamp-4">{news.description}</p>
+                  <p className="text-sm text-gray-400 line-clamp-4">{news?.description}</p>
                 </div>
 
                 <dl className="flex mt-6">
                   <div className="flex flex-col-reverse">
                     <dt className="text-sm font-medium text-gray-500">Published</dt>
-                    <dd className="text-xs text-gray-500">{news.datePublished.substring(0, 10)}</dd>
+                    <dd className="text-xs text-gray-500">
+                      {news?.datePublished?.substring(0, 10)}
+                    </dd>
                   </div>
                 </dl>
               </a>

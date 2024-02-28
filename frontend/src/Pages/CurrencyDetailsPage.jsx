@@ -1,15 +1,21 @@
 import { lazy, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../Context/AuthContext";
 import { supabase } from "../Utils/init-supabase";
 
-import { useGetCoinDataQuery, useGetHistoricalDataQuery } from "../services/coinsDataApi";
+import {
+  useGetCoinData1Query,
+  // useGetCoinDataQuery,
+  useGetHistoricalData1Query
+  // useGetHistoricalDataQuery
+} from "../services/coinsDataApi";
 
 import { HistoricalChart, HistoricalLineChart } from "../Components/CoinChart";
 import ErrorToast from "../Components/ErrorToast";
 import Loader from "../Components/Loader";
+import { useFetchCoinStatsQuery } from "../services/supabaseApi";
 
 // import BuyCoins from "../Components/BuyCoins";
 // import SellCoins from "../Components/SellCoins";
@@ -20,6 +26,11 @@ const CoinStats = lazy(() => import("../Components/CoinStats"));
 
 const CurrencyDetailsPage = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const coinSymbol = location.state?.symbol?.toLowerCase();
+
+  console.log("coinsymbol from watchlist", location.state);
+
   const toastRef = useRef(null);
   const navigate = useNavigate();
 
@@ -27,7 +38,7 @@ const CurrencyDetailsPage = () => {
 
   const [addToGun, setAddToGun] = useState(false);
   const [chartDays, setChartDays] = useState("365");
-  const [candleStickChart, setCandleStickChart] = useState(true);
+  const [candleStickChart, setCandleStickChart] = useState(false);
 
   const [gunError, setGunError] = useState(false);
   const [gunErrorMessage, setGunErrorMessage] = useState("");
@@ -35,16 +46,51 @@ const CurrencyDetailsPage = () => {
   const [toggleBuyCoinsModal, setToggleBuyCoinsModal] = useState(false);
   const [toggleSellCoinsModal, setToggleSellCoinsModal] = useState(false);
 
-  const { data, error, isLoading, isSuccess } = useGetCoinDataQuery(id, { pollingInterval: 10000 });
+  // const { data, error, isLoading, isSuccess } = useGetCoinDataQuery(id, {
+  //   pollingInterval: 300000
+  // });
 
   const {
-    data: chartData,
-    error: fetchChartDataError,
+    data: coinData,
+    error,
+    isLoading,
+    isSuccess
+  } = useGetCoinData1Query(
+    { id },
+    {
+      pollingInterval: 300000
+    }
+  );
+  // destructuring data from the api because it is of structure {data: {data: []}}
+  const data = coinData?.data[0];
+
+  // const {
+  //   data: chartData,
+  //   error: fetchChartDataError,
+  //   isLoading: isChartLoading,
+  //   isSuccess: chartDataSuccess
+  // } = useGetHistoricalDataQuery({
+  //   id,
+  //   chartDays
+  // });
+
+  const {
+    data: chartData1,
     isLoading: isChartLoading,
-    isSuccess: chartDataSuccess
-  } = useGetHistoricalDataQuery({
+    error: fetchChartDataError,
+    isSuccess: chartData1Success
+  } = useGetHistoricalData1Query({
     id,
-    chartDays
+    chartDays: "d1"
+  });
+
+  const {
+    data: coinStats,
+    isLoading: coinStatsLoading,
+    error: coinStatsError,
+    isSuccess: coinStatsSuccess
+  } = useFetchCoinStatsQuery({
+    coinSymbol
   });
 
   useEffect(() => {
@@ -92,8 +138,6 @@ const CurrencyDetailsPage = () => {
     // }
   }
 
-  useEffect(() => {}, []);
-
   const normalizeMarketCap = (marketCap) => {
     if (marketCap > 1_000_000_000_000) {
       return `${Math.floor(marketCap / 1_000_000_000_000)} T`;
@@ -110,6 +154,24 @@ const CurrencyDetailsPage = () => {
     return marketCap;
   };
 
+  const formatCryptoPrice = (price, maxDecimalPlaces = 8) => {
+    const parsedPrice = parseFloat(price);
+
+    if (isNaN(parsedPrice)) {
+      // Handle the case where the price is not a valid number
+      return "Invalid Price";
+    }
+
+    // Determine the magnitude of the number
+    const magnitude = Math.floor(Math.log10(Math.abs(parsedPrice)));
+
+    // Use Number.toFixed() to round the number to the appropriate decimal places
+    const decimalPlaces = Math.max(maxDecimalPlaces - magnitude, 0);
+    const roundedPrice = parsedPrice.toFixed(decimalPlaces);
+
+    return roundedPrice;
+  };
+
   return (
     <section className="lg:px-4 py-2  mx-auto max-w-[1600px]">
       {isSuccess && (
@@ -119,7 +181,7 @@ const CurrencyDetailsPage = () => {
         <SellCoins data={data} modal={toggleSellCoinsModal} setModal={setToggleSellCoinsModal} />
       )}
       {/* prettier-ignore */}
-      {(isLoading || isChartLoading) && <Loader />}
+      {(isLoading || isChartLoading || coinStatsLoading) && <Loader />}
 
       {error && <ErrorToast message="Something Went Wrong!" ref={toastRef} />}
 
@@ -133,7 +195,7 @@ const CurrencyDetailsPage = () => {
       )}
 
       {isSuccess && (
-        <div className="mt-6 mx-2 md:mx-4 max-w-[1600px]">
+        <div className="mt-12 mx-2 md:mx-4 max-w-[1600px]">
           {/* back button */}
           <Link
             to="/app/market"
@@ -158,7 +220,9 @@ const CurrencyDetailsPage = () => {
           <div className="flex flex-col md:flex-row md:space-x-8">
             {/* coin data */}
             <div className="flex items-center space-x-2">
-              <img src={data.image.large} className="w-12" alt={data.name} />
+              {coinStatsSuccess && (
+                <img src={coinStats && coinStats[0]?.image} className="w-12" alt={data.name} />
+              )}
               <div>
                 <p className="text-white font-title text-3xl font-bold">{data.name}</p>
                 <p className="text-gray-300 text-md uppercase font-semibold">{data.symbol}</p>
@@ -172,7 +236,7 @@ const CurrencyDetailsPage = () => {
                 </div>
                 <div className="flex flex-col justify-start">
                   <p className=" text-lg text-left md:text-2xl text-white font-bold my-2">
-                    ${data.market_data.current_price.usd}
+                    ${formatCryptoPrice(data.priceUsd)}
                   </p>
                 </div>
               </div>
@@ -184,13 +248,11 @@ const CurrencyDetailsPage = () => {
                 <div className="flex flex-col justify-start">
                   <p
                     className={`text-lg text-left md:text-2xl font-bold my-2 ${
-                      data?.market_data.price_change_percentage_24h >= 0
-                        ? "text-green-400"
-                        : "text-red-400"
+                      data?.changePercent24Hr >= 0 ? "text-green-400" : "text-red-400"
                     } `}
                   >
-                    {data?.market_data.price_change_percentage_24h >= 0 && "+"}
-                    {data.market_data.price_change_percentage_24h.toFixed(3)}%
+                    {data?.changePercent24Hr >= 0 && "+"}
+                    {parseFloat(data?.changePercent24Hr).toFixed(2)}%
                   </p>
                 </div>
               </div>
@@ -201,7 +263,7 @@ const CurrencyDetailsPage = () => {
                 </div>
                 <div className="flex flex-col justify-start">
                   <p className=" text-lg text-left md:text-2xl text-white font-bold my-2">
-                    {normalizeMarketCap(data.market_data.total_volume.usd)}
+                    {normalizeMarketCap(data.marketCapUsd)}
                   </p>
                 </div>
               </div>
@@ -263,7 +325,7 @@ const CurrencyDetailsPage = () => {
         </p>
       )}
 
-      <div className="mb-6 ml-2 md:ml-4 inline-flex  rounded-md shadow-sm" role="group">
+      {/* <div className="mb-6 ml-2 md:ml-4 inline-flex  rounded-md shadow-sm" role="group">
         <button
           onClick={() => setChartDays(() => "1")}
           type="button"
@@ -288,7 +350,7 @@ const CurrencyDetailsPage = () => {
         <button
           onClick={() => setChartDays(() => "365")}
           type="button"
-          className="py-2 px-4 font-text text-xs md:text-sm font-semibold   border  focus:z-10 focus:ring-2  bg-gray-900 border-gray-600 text-white hover:text-white hover:bg-gray-600 focus:ring-blue-500 focus:text-white"
+          className="py-2 px-4 font-text text-xs md:text-sm font-semibold rounded-r-md   border  focus:z-10 focus:ring-2  bg-gray-900 border-gray-600 text-white hover:text-white hover:bg-gray-600 focus:ring-blue-500 focus:text-white"
         >
           1 Year
         </button>
@@ -311,17 +373,22 @@ const CurrencyDetailsPage = () => {
             />
           )}
         </button>
-      </div>
+      </div> */}
 
       {/* <HistoricalChart id={id} /> */}
-      {(isSuccess && chartDataSuccess && candleStickChart) && (
+      {/* {isSuccess && chartDataSuccess && candleStickChart && (
         <HistoricalChart id={id} data={chartData} days={chartDays} />
+      )} */}
+      {isSuccess && chartData1Success && !candleStickChart && (
+        <HistoricalLineChart id={id} data={chartData1} days={chartDays} name={data.name} />
       )}
-      {(isSuccess && chartDataSuccess && !candleStickChart) && (
-        <HistoricalLineChart id={id} data={chartData} days={chartDays} name={data.name} />
+      {(coinStatsSuccess || isLoading) && (
+        <CoinStats
+          data={coinStats && coinStats[0]}
+          priceUsd={formatCryptoPrice(data?.priceUsd)}
+          price_change_percentage_24h={parseFloat(data?.changePercent24Hr)}
+        />
       )}
-
-      {isSuccess && <CoinStats data={data} />}
     </section>
   );
 };

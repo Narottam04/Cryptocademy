@@ -42,26 +42,19 @@ export const supabaseApi = createApi({
             .select("coinId")
             .eq("userId", `${id}`);
 
+          console.log(watchlistData);
+
           if (watchlistData.length !== 0) {
-            const watchlistId = watchlistData.map((item) => item.coinId);
+            const watchlistId = watchlistData.map((item) => item.coinId).join(",");
 
-            let watchlistPromise = [];
-            watchlistId.forEach((coinId) => {
-              // create a promise for each api call
-              const request = fetch(`https://api.coingecko.com/api/v3/coins/${coinId}`);
-              watchlistPromise.push(request);
-            });
-            const res = await Promise.allSettled(watchlistPromise);
+            const res = await fetch(`https://api.coincap.io/v2/assets?ids=${watchlistId}`);
 
-            const error = res.filter((result) => result.status === "rejected");
-
-            if (error.length > 0) {
-              throw new Error("Something went wrong! Please try again.");
+            if (!res.ok) {
+              throw new Error("Something went wrong! Please try again");
             }
 
-            const data = await Promise.all(res.map((r) => r?.value?.json()));
-
-            return { data };
+            const data = await res.json();
+            return { data: data?.data };
           } else {
             return { data: [] };
           }
@@ -81,25 +74,15 @@ export const supabaseApi = createApi({
             .not("coinId", "eq", "USD");
 
           if (portfolioData.length !== 0) {
-            const portfolioId = portfolioData.map((item) => item.coinId);
+            const portfolioId = portfolioData.map((item) => item.coinId).join(",");
+            const res = await fetch(`https://api.coincap.io/v2/assets?ids=${portfolioId}`);
 
-            let portfolioPromise = [];
-            portfolioId.forEach((coinId) => {
-              // create a promise for each api call
-              const request = fetch(`https://api.coingecko.com/api/v3/coins/${coinId}`);
-              portfolioPromise.push(request);
-            });
-            const res = await Promise.allSettled(portfolioPromise);
-
-            const error = res.filter((result) => result.status === "rejected");
-
-            if (error.length > 0) {
-              throw new Error("Something went wrong! Please try again.");
+            if (!res.ok) {
+              throw new Error("Something went wrong! Please try again");
             }
 
-            const data = await Promise.all(res.map((r) => r?.value?.json()));
-
-            return { data };
+            const data = await res.json();
+            return { data: data?.data };
           } else {
             return { data: [] };
           }
@@ -165,6 +148,25 @@ export const supabaseApi = createApi({
           return { error: error };
         }
       }
+    }),
+    fetchCoinStats: builder.query({
+      queryFn: async ({ coinSymbol }) => {
+        try {
+          // get available coins
+          let { data: stats, error } = await supabase
+            .from("stats")
+            .select("*")
+            .eq("symbol", `${coinSymbol}`);
+
+          if (error) {
+            throw new Error(error);
+          }
+
+          return { data: stats };
+        } catch (error) {
+          return { error: error };
+        }
+      }
     })
   })
 });
@@ -175,5 +177,6 @@ export const {
   useGetUserNetworthQuery,
   useGetLeaderboardQuery,
   useFetchAvailableCoinsQuery,
-  useGetPortfolioCoinDataQuery
+  useGetPortfolioCoinDataQuery,
+  useFetchCoinStatsQuery
 } = supabaseApi;

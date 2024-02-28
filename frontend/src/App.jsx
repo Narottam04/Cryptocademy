@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { AdMob, AdmobConsentStatus } from "@capacitor-community/admob";
 
 import "./App.css";
 
 import AnimatedRoutes from "./Components/AnimatedRoutes";
 import ScrollToTop from "./Components/ScrollToTop";
+import ClientError from "./Pages/ClientError";
+import ErrorBoundary from "./Utils/ErrorBoundary";
 
 function App() {
   const [notificationId, setNotificationId] = useState(0);
@@ -78,6 +81,55 @@ function App() {
     registerLocalNotifications();
   }, []);
 
+  // capacitor admob plugin
+  useEffect(() => {
+    async function initialize() {
+      const init = await AdMob.initialize("ca-app-pub-7061809165741443~7675147719");
+
+      console.log("init admob", init);
+
+      const [trackingInfo, consentInfo] = await Promise.all([
+        AdMob.trackingAuthorizationStatus()
+        // AdMob.requestConsentInfo()
+      ]);
+
+      console.log("trackingInfo", trackingInfo.status);
+      console.log("consentInfo", consentInfo);
+
+      if (trackingInfo.status === "notDetermined") {
+        /**
+         * If you want to explain TrackingAuthorization before showing the iOS dialog,
+         * you can show the modal here.
+         * ex)
+         * const modal = await this.modalCtrl.create({
+         *   component: RequestTrackingPage,
+         * });
+         * await modal.present();
+         * await modal.onDidDismiss();  // Wait for close modal
+         **/
+
+        await AdMob.requestTrackingAuthorization();
+      }
+
+      const authorizationStatus = await AdMob.trackingAuthorizationStatus();
+
+      // console.log(
+      //   "burrrrrrrrrrrrrrr",
+      //   consentInfo?.status,
+      //   consentInfo?.isConsentFormAvailable,
+      //   AdmobConsentStatus.REQUIRED
+      // );
+      if (
+        authorizationStatus.status === "authorized" &&
+        consentInfo?.isConsentFormAvailable &&
+        consentInfo?.status === AdmobConsentStatus.REQUIRED
+      ) {
+        await AdMob.showConsentForm();
+      }
+    }
+    initialize();
+  }, []);
+
   useEffect(() => {
     if (notificationStatus) {
       console.log(notificationStatus);
@@ -85,11 +137,15 @@ function App() {
     }
   }, [notificationStatus]);
 
+  console.log("hello world");
+
   return (
     <div className="App scrollbar scrollbar-thumb-gray-900 scrollbar-track-gray-100 bg-black">
       <BrowserRouter>
-        <ScrollToTop />
-        <AnimatedRoutes />
+        <ErrorBoundary fallback={<ClientError />}>
+          <ScrollToTop />
+          <AnimatedRoutes />
+        </ErrorBoundary>
       </BrowserRouter>
     </div>
   );

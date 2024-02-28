@@ -93,14 +93,37 @@ export const TradingChart = ({ id, data, days }) => {
 export const LineChart = ({ id, data, days, name }) => {
   const chartContainerRef = useRef();
   const toolTipRef = useRef();
+  const formatCryptoPrice = (price, maxDecimalPlaces = 8) => {
+    const parsedPrice = parseFloat(price);
 
+    if (isNaN(parsedPrice)) {
+      // Handle the case where the price is not a valid number
+      return "Invalid Price";
+    }
+
+    // Determine the magnitude of the number
+    const magnitude = Math.floor(Math.log10(Math.abs(parsedPrice)));
+
+    // Use Number.toFixed() to round the number to the appropriate decimal places
+    const decimalPlaces = Math.max(maxDecimalPlaces - magnitude, 0);
+    const roundedPrice = parsedPrice.toFixed(decimalPlaces);
+
+    return roundedPrice;
+  };
   useEffect(() => {
-    const localChartData = data.map((price) => {
+    const localChartData = data?.data.map((price) => {
       return {
-        time: price[0] / 1000,
-        value: price[4]
+        time: price?.time / 1000,
+        value: parseFloat(price?.priceUsd)
       };
     });
+
+    // Filter data based on the specified number of days
+    // const localChartData = filteredData.filter((dataPoint) => {
+    //   const currentTime = Math.floor(Date.now() / 1000);
+    //   const timeDiff = currentTime - dataPoint.time;
+    //   return timeDiff <= Number(days) * 24 * 60 * 60;
+    // });
 
     const handleResize = () => {
       chart.applyOptions({
@@ -195,13 +218,13 @@ export const LineChart = ({ id, data, days, name }) => {
     toolTipRef.current.style.top = 3 + "px";
 
     function setLastBarText() {
-      var dateStr = dayjs(data[data.length - 1]?.time).format("YYYY-MM-DD");
+      var dateStr = dayjs(data?.data[data.length - 1]?.time).format("YYYY-MM-DD");
 
       toolTipRef.current.innerHTML =
         `<div style="font-size: 24px; margin: 4px 0px; color: #ffffff">${name}</div>` +
         '<div style="font-size: 22px; margin: 4px 0px; color: #ffffff">' +
         "$" +
-        localChartData[data.length - 1].value +
+        formatCryptoPrice(localChartData[data?.data.length - 1].value) +
         "</div>" +
         '<div style="font-size: 22px; margin: 4px 0px; color: #ffffff">' +
         dateStr +
@@ -221,13 +244,13 @@ export const LineChart = ({ id, data, days, name }) => {
       ) {
         setLastBarText();
       } else {
-        let dateStr = dayjs.unix(param?.time).format("YYYY-MM-DD");
+        let dateStr = dayjs.unix(param?.time).format("YYYY-MM-DD, HH:mm A");
         var price = param.seriesPrices.get(newSeries);
         toolTipRef.current.innerHTML =
           `<div style="font-size: 24px; margin: 4px 0px; color: #ffffff">${name}</div>` +
           '<div style="font-size: 22px; margin: 4px 0px; color: #ffffff">' +
           "$" +
-          price +
+          formatCryptoPrice(price) +
           "</div>" +
           '<div style="font-size: 22px; margin: 4px 0px; color: #ffffff">' +
           dateStr +

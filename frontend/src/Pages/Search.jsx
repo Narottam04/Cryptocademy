@@ -17,7 +17,7 @@ const Search = () => {
       if (search) {
         try {
           setIsLoading(true);
-          const res = await fetch(`https://api.coingecko.com/api/v3/search?query=${search}`);
+          const res = await fetch(`https://api.coincap.io/v2/assets?search=${search}`);
 
           if (!res.ok) {
             throw new Error("Something went wrong! Please try again");
@@ -40,9 +40,9 @@ const Search = () => {
   }, [search]);
 
   return (
-    <section className="lg:px-4 py-4 lg:py-8 max-w-[1600px] font-text">
+    <section className="lg:px-4 pb-4 lg:py-8 max-w-[1600px] font-text">
       {/* search Bar */}
-      <div className="px-4">
+      <div className="px-4 mt-[40px]">
         <label for="table-search" className="sr-only">
           Search
         </label>
@@ -79,21 +79,21 @@ const Search = () => {
       ) : (
         <ul className="mx-8">
           {searchData !== undefined &&
-            searchData?.coins?.map((coin, index) => (
+            searchData?.data?.map((coin, index) => (
               <li
-                onClick={() => navigate(`/app/coin/${coin.id}`)}
+                onClick={() => navigate(`/app/coin/${coin.id}`, { state: { symbol: coin.symbol } })}
                 key={index}
                 className="flex items-center text-gray-200 justify-between py-3 border-b-2 border-gray-800 cursor-pointer"
               >
                 <div className="flex items-center justify-start text-sm space-x-3">
-                  <img src={coin.large} alt={`${coin.name}`} className="w-7 h-7" />
+                  {/* <img src={coin.large} alt={`${coin.name}`} className="w-7 h-7" /> */}
                   <div className="">
-                    <p className="text-white text-md font-bold ">{coin.name}</p>
-                    <p className="text-white text-xs">{coin.symbol}</p>
+                    <p className="text-white text-md font-bold ">{coin?.name}</p>
+                    <p className="text-white text-xs">{coin?.symbol}</p>
                   </div>
                 </div>
                 <div className="">
-                  <p className="text-white font-medium">Rank: {coin.market_cap_rank}</p>
+                  <p className="text-white font-medium">Rank: {coin?.rank}</p>
                 </div>
               </li>
             ))}
